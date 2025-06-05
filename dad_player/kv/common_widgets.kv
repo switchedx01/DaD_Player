@@ -1,0 +1,133 @@
+#:kivy 2.1.0
+
+<AlbumGridItem>:
+    orientation: 'vertical'
+    size_hint_y: None
+    # Height is set by RecycleGridLayout's default_size (e.g., dp(220))
+    padding: dp(5)
+    spacing: dp(5)
+    canvas.before:
+        Color:
+            rgba: 0.15, 0.15, 0.15, 1 # Darker background for the item
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.3, 0.3, 0.3, 1 # Slightly darker border for items
+        Line:
+            rectangle: self.x, self.y, self.width, self.height
+            width: 1
+
+    AsyncImage:
+        source: root.art_path # Python side should handle placeholder if art_path is None/invalid
+        size_hint_y: 0.70
+        allow_stretch: True
+        keep_ratio: False # Allow stretch to fill, or True to maintain aspect
+        mipmap: True
+
+    Label:
+        text: root.album_name if root.album_name else "Unknown Album"
+        font_size: sp(14)
+        size_hint_y: 0.15
+        color: 1, 1, 1, 1 # White text
+        halign: 'center'
+        valign: 'middle'
+        text_size: self.width - dp(8), None # For wrapping/shortening
+        shorten: True
+        shorten_from: 'right'
+
+    Label:
+        text: root.artist_name if root.artist_name else "Unknown Artist"
+        font_size: sp(12)
+        size_hint_y: 0.15
+        color: 0.8, 0.8, 0.8, 1 # Light grey text
+        halign: 'center'
+        valign: 'middle'
+        text_size: self.width - dp(8), None # For wrapping/shortening
+        shorten: True
+        shorten_from: 'right'
+
+<ArtistListItem>:
+    # Label is added and primarily styled in Python __init__ (including text color).
+    # KV here defines size and border.
+    size_hint_y: None
+    height: dp(48)
+    padding: [dp(10), dp(5)]
+    spacing: dp(10)
+    canvas.before:
+        Color:
+            rgba: 0.15, 0.15, 0.15, 1 # Darker background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.3, 0.3, 0.3, 1 # Item border
+        Line:
+            rectangle: self.x, self.y, self.width, self.height
+            width: 1
+    # The Label widget (self.name_label) is added in Python
+
+<SongListItem>:
+    orientation: 'horizontal' # Changed for better layout
+    size_hint_y: None
+    height: dp(60) # Default height, adjust as needed
+    padding: dp(5)
+    spacing: dp(10)
+
+    canvas.before:
+        Color:
+            # Dark grey background, similar to your app's theme
+            # You can adjust this or make it transparent if the parent RecycleView provides the background
+            rgba: (0.18, 0.18, 0.18, 1) if root.track_id else (0.15, 0.15, 0.15, 1) # Slightly different if it's a placeholder
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.3, 0.3, 0.3, 1 # Border color
+        Line:
+            rectangle: self.x, self.y, self.width, self.height
+            width: 1
+
+    AsyncImage:
+        id: song_item_art_image # Added id to match your Python code
+        source: root.art_path
+        size_hint_x: None
+        width: self.height # Make it square, using the item's height
+        allow_stretch: True
+        keep_ratio: True # Keep aspect ratio for album art
+        mipmap: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: 0.8
+        padding: [dp(5), 0]
+
+        Label:
+            text: root.song_title_text
+            font_size: sp(15)
+            color: 1, 1, 1, 1 # White text
+            halign: 'left'
+            valign: 'top'
+            text_size: self.width, None
+            size_hint_y: 0.6
+            shorten: True
+            shorten_from: 'right'
+
+        Label:
+            text: f"{root.track_number_text or ''} {root.artist_name_text or 'Unknown Artist'}"
+            font_size: sp(12)
+            color: 0.8, 0.8, 0.8, 1 # Light grey text
+            halign: 'left'
+            valign: 'bottom'
+            text_size: self.width, None
+            size_hint_y: 0.4
+            shorten: True
+            shorten_from: 'right'
+
+    Label:
+        text: root.duration_text
+        font_size: sp(12)
+        color: 0.7, 0.7, 0.7, 1 # Dimmed grey text
+        size_hint_x: 0.15 # Give it some space
+        halign: 'right'
+        valign: 'middle'

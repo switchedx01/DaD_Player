@@ -1,0 +1,186 @@
+#:kivy 2.3.0
+#:import format_duration dad_player.utils.format_duration
+
+<NowPlayingView>: # This defines the NowPlayingView widget (which IS a BoxLayout)
+
+    # Properties and canvas instructions FOR NowPlayingView itself go here,
+    # indented directly under the <NowPlayingView>: rule.
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.bg_normal if hasattr(app, 'theme_cls') else [0.1, 0.1, 0.1, 1]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    minimum_size: dp(800), dp(600) # This applies to NowPlayingView itself
+
+    # Now, define the children of NowPlayingView.
+    # Typically, a BoxLayout (which NowPlayingView is) will have one main child layout
+    # that then contains all other elements, or its orientation must be set if it directly hosts multiple children.
+    # For clarity and common practice, let's ensure it has ONE main child BoxLayout.
+
+    BoxLayout: # This is the primary child, containing all visual elements for NowPlayingView
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(5)
+        size_hint: 1, 1 # Make this inner layout fill NowPlayingView
+        # Album Art
+        Image:
+            id: album_art_np
+            texture: root.album_art_texture
+            size_hint_y: 0.4
+            allow_stretch: True
+            keep_ratio: True
+            mipmap: True
+            pos_hint: {'center_x': 0.5} # Ensure this syntax is correct
+
+        # Box for Track Info Labels
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.20
+            spacing: dp(2)
+            Label:
+                id: title_label_np
+                text: root.song_title_text
+                font_size: sp(20)
+                bold: True
+                size_hint_y: None
+                height: self.texture_size[1] + dp(4)
+                halign: 'center'
+                valign: 'center'
+                shorten: True
+                shorten_from: 'right'
+                text_size: self.width - dp(10), None
+            Label:
+                id: artist_label_np
+                text: root.artist_name_text
+                font_size: sp(20)
+                bold: True
+                size_hint_y: None
+                height: self.texture_size[1] + dp(4)
+                halign: 'center'
+                valign: 'center'
+                shorten: True
+                shorten_from: 'right'
+                text_size: self.width - dp(10), None
+            Label:
+                id: artist_label_np
+                text: root.artist_name_text
+                font_size: sp(16)
+                size_hint_y: None
+                height: self.texture_size[1] + dp(4)
+                halign: 'center'
+                valign: 'center'
+                shorten: True
+                text_size: self.width - dp(10), None
+            Label:
+                id: album_label_np
+                text: root.album_name_text
+                font_size: sp(14)
+                size_hint_y: None
+                height: self.texture_size[1] + dp(4)
+                halign: 'center'
+                valign: 'center'
+                color: 0.8, 0.8, 0.8, 1
+                shorten: True
+                text_size: self.width - dp(10), None
+
+        # Progress Slider and Time Labels
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(30) + dp(20) # This is dp(50)
+            spacing: dp(2)
+            # Add horizontal padding to this BoxLayout if that's the goal
+            # padding: [dp(10), 0, dp(10), 0] # Example: left and right padding for the whole section
+
+            Slider:
+                id: progress_slider_np
+                max: root.progress_slider_max
+                value: root.progress_slider_value
+                on_touch_down: root.on_progress_slider_touch_down(self)
+                on_touch_up: root.on_progress_slider_touch_up(self)
+                on_value: root.on_progress_slider_value_changed(self, self.value)
+                size_hint_y: None
+                height: dp(30)            
+                padding: dp(10)
+            BoxLayout:
+                size_hint_y: None
+                height: dp(20)
+                padding: [dp(10), 0, dp(10), 0]
+                Label:
+                    id: current_time_label_np
+                    text: root.current_time_text
+                    font_size: sp(14)
+                    halign: 'left'
+                    valign: 'center'
+                    text_size: self.width, None
+                Label:
+                    id: total_time_label_np
+                    text: root.total_time_text
+                    font_size: sp(14)
+                    halign: 'right'
+                    valign: 'center'
+                    text_size: self.width, None
+
+        # Playback Controls
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(5)
+            padding: [dp(5), dp(5)]
+            Button:
+                id: shuffle_button_np
+                text: "Shuffle" # Changed to text
+                font_name: 'Roboto' # Keep or adjust font as needed
+                font_size: sp(14) # Adjust font size for text
+                on_release: root.on_shuffle_button_press()
+            Button:
+                id: previous_button_np
+                text: "Prev" # Changed to text
+                font_name: 'Roboto'
+                font_size: sp(14)
+                on_release: root.on_previous_button_press()
+            Button:
+                id: play_pause_button_np
+                # Update the text based on Python state for play/pause
+                text: "Pause" if root.play_pause_icon_text == 'pause-circle-outline' else "Play" # Changed to text
+                font_name: 'Roboto'
+                font_size: sp(14)
+                on_release: root.on_play_pause_button_press()
+            Button:
+                id: next_button_np
+                text: "Next" # Changed to text
+                font_name: 'Roboto'
+                font_size: sp(14)
+                on_release: root.on_next_button_press()
+            Button:
+                id: repeat_button_np
+                # The root.repeat_mode_icon property in your Python code
+                # should now be set to "Repeat", "Rpt. Song", "Rpt. Off" or similar text
+                # instead of emoji characters.
+                text: root.repeat_mode_icon
+                font_name: 'Roboto'
+                font_size: sp(14)
+                on_release: root.on_repeat_button_press()
+
+        # Status Label
+        Label:
+            id: status_label_np
+            text: "Ready"
+            font_size: sp(12)
+            size_hint_y: 0.05
+            halign: 'center'
+            valign: 'center'
+
+        # Manage Folders Button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            padding: [dp(5), 0, dp(5), dp(5)]
+            Button:
+                id: manage_folders_button
+                text: "📁 Add Music"
+                font_name: 'Roboto'
+                font_size: sp(16)
+                on_release: root.on_manage_folders_button_press()
+                size_hint_x: 1

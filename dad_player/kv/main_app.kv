@@ -1,0 +1,14 @@
+#:kivy 2.1.0
+
+# The common_widgets.kv file is loaded directly by app.py,
+# so the #:include directive MUST BE REMOVED/COMMENTED OUT from here.
+# e.g., DO NOT HAVE THIS LINE ACTIVE: #:include common_widgets.kv
+
+# Import Python classes for use in KV, if needed at this root level
+# #:import MainScreen dad_player.ui.screens.main_screen.MainScreen
+
+
+# Define a global/root screen manager
+ScreenManager:
+    id: root_screen_manager
+    # The MainScreen instance is added programmatically in DadPlayerApp.build()

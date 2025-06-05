@@ -1,0 +1,154 @@
+#:import utils dad_player.utils 
+#:import Window kivy.core.window.Window
+#:import AlbumGridItem dad_player.ui.widgets.album_grid_item.AlbumGridItem
+#:import SongListItem dad_player.ui.widgets.song_list_item.SongListItem
+#:import IconButton dad_player.ui.widgets.icon_button.IconButton
+#:import ArtistListItem dad_player.ui.widgets.artist_list_item.ArtistListItem
+
+<LibraryView>:
+    orientation: 'vertical'
+    # The debug_label from Python will be added to library_header_bar
+
+    BoxLayout:
+        id: library_header_bar
+        size_hint_y: None
+        height: dp(48)
+        spacing: dp(5)
+        padding: [dp(5), 0, dp(5), 0] 
+
+        IconButton:
+            id: library_back_button
+            icon_text: "<" 
+            font_name: "Roboto" 
+            icon_font_size_sp: sp(22)
+            size_hint_x: None
+            width: dp(48)
+            disabled: root.current_view_mode == 'all_albums'
+            on_release: root.go_back_library_navigation()
+            opacity: 0.5 if self.disabled else 1.0
+
+        Label:
+            id: library_path_label
+            text: root._display_path_text
+            font_size: sp(16)
+            halign: 'left'
+            valign: 'center'
+            shorten: True
+            text_size: self.width, None
+            padding_x: dp(5) 
+
+        Widget: 
+            size_hint_x: 0.1 if library_path_label.texture_size[0] < library_path_label.width * 0.8 else 1
+
+        Button:
+            text: "View Artists"
+            size_hint_x: None
+            width: self.texture_size[0] + dp(20) 
+            font_size: sp(12)
+            on_release: root.show_all_artists()
+            opacity: 1 if root.current_view_mode != 'artists' else 0.5 
+            disabled: root.current_view_mode == 'artists'            
+            
+        Widget: 
+            size_hint_x: 1 
+
+        Button:
+            id: scan_library_button_lv
+            text: "Scan Library"
+            size_hint_x: None
+            width: self.texture_size[0] + dp(20) 
+            font_size: sp(12)
+            on_release: root.on_scan_library_button_press()
+
+    Button:
+        id: play_album_button
+        text: f"Play Album: {root.current_album_name}" if root.current_album_name else "Play Album"
+        size_hint_y: None
+        height: dp(40) if root.current_view_mode == 'songs_for_album' and root.songs_data else 0
+        opacity: 1 if root.current_view_mode == 'songs_for_album' and root.songs_data else 0
+        disabled: not (root.current_view_mode == 'songs_for_album' and root.songs_data)
+        on_release: root.on_play_album_button_press()
+        font_size: sp(14)
+        background_color: [0.2, 0.6, 0.3, 1]
+        background_normal: ''
+
+    FloatLayout: 
+        id: library_content_area
+        size_hint_y: 1
+
+        RecycleView:
+            id: artists_rv
+            data: root.artists_data
+            viewclass: 'ArtistListItem'
+            
+            opacity: 1 if root.current_view_mode == 'artists' else 0
+            disabled: root.current_view_mode != 'artists' 
+            size_hint: (1,1) if root.current_view_mode == 'artists' else (None, None)
+            size: (self.parent.width, self.parent.height) if root.current_view_mode == 'artists' else (0,0)
+
+            scroll_type: ['bars', 'content']
+            bar_width: dp(10)
+            RecycleBoxLayout:
+                orientation: 'vertical'
+                default_size: None, dp(48) 
+                default_size_hint: 1, None
+                size_hint_y: None 
+                height: self.minimum_height 
+                padding: dp(5)
+                spacing: dp(3)
+
+        RecycleView: 
+            id: songs_rv
+            data: root.songs_data
+            viewclass: 'SongListItem'
+
+            opacity: 1 if root.current_view_mode == 'songs_for_album' else 0
+            disabled: root.current_view_mode != 'songs_for_album'
+            size_hint: (1,1) if root.current_view_mode == 'songs_for_album' else (None, None)
+            size: (self.parent.width, self.parent.height) if root.current_view_mode == 'songs_for_album' else (0,0)
+
+            scroll_type: ['bars', 'content']
+            bar_width: dp(10)
+            RecycleBoxLayout:
+                orientation: 'vertical'
+                default_size: None, dp(60)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(5)
+                spacing: dp(2)
+
+        RecycleView:
+            id: albums_rv
+            data: root.albums_data
+            viewclass: 'AlbumGridItem'
+
+            opacity: 1 if (root.current_view_mode == 'all_albums' or root.current_view_mode == 'albums_for_artist') else 0
+            disabled: not (root.current_view_mode == 'all_albums' or root.current_view_mode == 'albums_for_artist')
+            size_hint: (1,1) if (root.current_view_mode == 'all_albums' or root.current_view_mode == 'albums_for_artist') else (None, None)
+            size: (self.parent.width, self.parent.height) if (root.current_view_mode == 'all_albums' or root.current_view_mode == 'albums_for_artist') else (0,0)
+            
+            scroll_type: ['bars', 'content']
+            bar_width: dp(10)
+            RecycleGridLayout:
+                # Ensure this layout manager gets width from its parent RV
+                size_hint: 1, None 
+                height: self.minimum_height 
+                # Make cols calculation simpler for debugging, ensure self.width is used.
+                # If self.width is 0 initially, this might still be an issue.
+                # Fallback to a fixed number of columns if width is too small.
+                cols: max(1, int(self.width / dp(180))) if self.width > dp(180) else 2 # Default to 2 cols if width is small
+                default_size: dp(170), dp(220) # Fixed size for children
+                default_size_hint: None, None  # Children will not use size_hint
+                padding: dp(10)
+                spacing: dp(10)
+
+    Label:
+        id: library_status_label
+        text: root.status_text
+        size_hint_y: None
+        height: self.texture_size[1] + dp(10) if root.status_text else 0 
+        opacity: 1 if root.status_text else 0
+        font_size: sp(12)
+        color: 0.2,0.2,0.2,1
+        halign: 'center'

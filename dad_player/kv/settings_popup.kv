@@ -1,0 +1,178 @@
+# #:kivy 2.1.0
+#:import utils dad_player.utils
+#:import constants dad_player.constants
+# #:import IconButton dad_player.ui.widgets.icon_button.IconButton # If used for any buttons
+
+<PlayerSettingsPopup>:
+    # title, size_hint, auto_dismiss are set in Python or can be overridden here
+    title: "Player Settings"
+    size_hint: 0.9, 0.9
+    auto_dismiss: False # User must explicitly close to save changes or cancel
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+
+        # Optional: A header label for the settings section
+        Label:
+            text: "Playback Settings"
+            font_size: utils.spx(18)
+            size_hint_y: None
+            height: dp(35) # Increased height
+            bold: True
+            halign: 'left'
+            text_size: self.width, None # Allow wrapping if needed
+            padding: dp(5) # Padding for the label itself
+
+        ScrollView:
+            size_hint_y: 1 # Make scroll view take available space
+            bar_width: dp(10) # Make scrollbar visible
+            do_scroll_x: False
+
+            GridLayout:
+                cols: 1
+                spacing: dp(10) # Spacing between setting rows
+                size_hint_y: None
+                height: self.minimum_height # Allow grid to grow
+                padding: dp(5) # Padding inside the grid
+
+                # --- Autoplay Setting ---
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(44) # Standard height for rows
+                    Label:
+                        text: "Auto-Play Next Song:"
+                        font_size: utils.spx(14)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.width, None
+                    CheckBox:
+                        id: autoplay_checkbox_settings # Specific ID for this popup
+                        active: root.autoplay_active
+                        on_active: root.autoplay_active = self.active # Update property on change
+                        size_hint_x: None
+                        width: dp(48) # Standard checkbox width
+                
+                # --- Shuffle Setting ---
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(44)
+                    Label:
+                        text: "Shuffle Playlist:"
+                        font_size: utils.spx(14)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.width, None
+                    CheckBox:
+                        id: shuffle_checkbox_settings
+                        active: root.shuffle_active
+                        on_active: root.shuffle_active = self.active
+                        size_hint_x: None
+                        width: dp(48)
+
+                # --- Repeat Mode Setting ---
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(44)
+                    Label:
+                        text: "Repeat Mode:"
+                        font_size: utils.spx(14)
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.width, None
+                    Button:
+                        id: repeat_button_settings
+                        text: root.repeat_mode_text
+                        font_size: utils.spx(14)
+                        on_release: root.cycle_repeat_mode()
+                        size_hint_x: 0.45 # Give it some width to show text
+                        background_normal: '' # Custom background
+                        background_color: [0.4, 0.4, 0.45, 1]
+
+
+                # --- Manage Music Folders Button ---
+                Button:
+                    id: manage_folders_button_settings
+                    text: "Manage Music Folders"
+                    font_size: utils.spx(14)
+                    size_hint_y: None
+                    height: dp(48) # Slightly larger button
+                    on_release: root.open_manage_folders_popup()
+                    background_color: [0.3, 0.5, 0.7, 1] # Distinct color
+                    background_normal: ''
+                
+                # --- Library Scan Section ---
+                Label: # Section Header
+                    text: "Library Management"
+                    font_size: utils.spx(16)
+                    size_hint_y: None
+                    height: dp(30)
+                    bold: True
+                    halign: 'left'
+                    text_size: self.width, None
+                    padding_y: dp(10) # Space above this header
+
+                Button:
+                    id: scan_library_button_settings
+                    text: "Scan Library (Update Existing)"
+                    font_size: utils.spx(14)
+                    size_hint_y: None
+                    height: dp(48)
+                    on_release: root.start_library_scan(full_rescan=False)
+                    # disabled: root.library_manager.is_scanning if root.library_manager else True # Bind in Python
+                    background_color: [0.2, 0.6, 0.4, 1] # Greenish
+                    background_normal: ''
+                
+                Button:
+                    id: full_scan_library_button_settings
+                    text: "Full Library Rescan (Slow, removes old)"
+                    font_size: utils.spx(14)
+                    size_hint_y: None
+                    height: dp(48)
+                    on_release: root.start_library_scan(full_rescan=True)
+                    # disabled: root.library_manager.is_scanning if root.library_manager else True # Bind in Python
+                    background_color: [0.7, 0.4, 0.2, 1] # Orangey-red
+                    background_normal: ''
+                
+                Label:
+                    id: scan_status_label_settings_popup # Unique ID
+                    text: root.scan_status_text
+                    font_size: utils.spx(12)
+                    color: [0.9, 0.9, 0.3, 1] # Yellowish for status
+                    size_hint_y: None
+                    height: self.texture_size[1] if root.scan_status_text else 0
+                    opacity: 1 if root.scan_status_text else 0
+                    padding_y: dp(5)
+
+                # --- CLI Info Button ---
+                Button:
+                    id: cli_info_button_settings
+                    text: "How to use CLI Mode"
+                    font_size: utils.spx(14)
+                    size_hint_y: None
+                    height: dp(48)
+                    on_release: root.show_cli_info_popup()
+                    
+        # --- Footer Section ---
+        BoxLayout: 
+            size_hint_y: None
+            height: dp(60) # Fixed height for footer
+            orientation: 'vertical' # For version label and close button
+            spacing: dp(5)
+            padding: [0, dp(5), 0, 0] # Padding at the top of footer
+
+            Label:
+                text: f"DAD Player v{constants.APP_VERSION}" # Access constant via import
+                font_size: utils.spx(10)
+                color: [0.7,0.7,0.7,1]
+                size_hint_y: None
+                height: dp(20)
+
+            Button:
+                id: close_settings_button_popup
+                text: "Close Settings"
+                font_size: utils.spx(14)
+                size_hint_y: None # Take specified height
+                height: dp(40)
+                on_release: root.dismiss()

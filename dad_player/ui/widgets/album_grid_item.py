@@ -4,9 +4,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.logger import Logger
 from kivy.app import App
-from kivy.metrics import dp, sp # Import Kivy's metrics
+from kivy.metrics import dp, sp 
 
-# from dad_player.utils import spx # REMOVED spx import
 
 class AlbumGridItem(BoxLayout):
     album_id = NumericProperty(None)
@@ -17,8 +16,6 @@ class AlbumGridItem(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Sizing and internal element properties should be handled in KV with dp/sp.
-        # This Python code should primarily focus on logic.
         if not self.art_path or not os.path.exists(self.art_path):
             app = App.get_running_app()
             if app and hasattr(app, 'icons_dir'):

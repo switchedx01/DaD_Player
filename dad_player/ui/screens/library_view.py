@@ -140,7 +140,6 @@ class LibraryView(BoxLayout):
         app = App.get_running_app()
         if app and hasattr(app, 'icons_dir') and app.icons_dir:
             self._placeholder_art = get_placeholder_album_art_path(app.icons_dir)
-            # Logger.info(f"LibraryView [_post_init_setup]: Placeholder art path set using app.icons_dir: {self._placeholder_art}")
         else:
             assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "assets")
             icons_dir = os.path.join(assets_dir, "icons")
@@ -182,12 +181,8 @@ class LibraryView(BoxLayout):
     def refresh_library_view(self):
         """Refreshes the content of the currently active library view."""
         Logger.info(f"LibraryView [refresh_library_view]: Refreshing view. Mode: {self.current_view_mode}, ArtistID: {self.current_artist_id}, AlbumID: {self.current_album_id}")
-        # Store current navigational context
+
         current_mode_before_refresh = self.current_view_mode
-        # current_artist_id_before = self.current_artist_id # No, these are class properties, don't need to store
-        # current_artist_name_before = self.current_artist_name
-        # current_album_id_before = self.current_album_id
-        # current_album_name_before = self.current_album_name
 
         if current_mode_before_refresh == "all_albums":
             self.load_all_albums()
@@ -509,17 +504,17 @@ class LibraryView(BoxLayout):
 
         if self.current_view_mode == "songs_for_album" and self.songs_data:
             all_filepaths_in_album = [s['filepath'] for s in self.songs_data if 'filepath' in s and s.get('filepath')]
-            if not all_filepaths_in_album: # Should not happen if songs_data is populated
+            if not all_filepaths_in_album:
                 Logger.warning("LibraryView [on_song_selected]: songs_data present, but no filepaths found. Playing selected song only.")
                 self.player_engine.load_media(filepath, play_immediately=True)
             else:
                 try:
                     start_index = all_filepaths_in_album.index(filepath)
                     self.player_engine.load_playlist(all_filepaths_in_album, play_index=start_index, clear_current=True)
-                except ValueError: # Should not happen if filepath came from a song in songs_data
+                except ValueError:
                     Logger.error(f"LibraryView [on_song_selected]: Filepath '{filepath}' not found in album's filepaths. Playing selected song only.")
                     self.player_engine.load_media(filepath, play_immediately=True)
-        else: # If not in album view or songs_data is empty, just play the single song
+        else:
             self.player_engine.load_media(filepath, play_immediately=True)
 
         # Switch to Now Playing tab
@@ -529,7 +524,6 @@ class LibraryView(BoxLayout):
 
 
     def on_play_album_button_press(self):
-        # This button should only be active/visible when in 'songs_for_album' mode
         if self.current_view_mode == "songs_for_album" and self.current_album_id is not None and self.songs_data:
             Logger.info(f"LibraryView [on_play_album_button_press]: Play Album: {self.current_album_name} (ID: {self.current_album_id})")
             if self.player_engine:
@@ -548,11 +542,10 @@ class LibraryView(BoxLayout):
     def go_back_library_navigation(self):
         Logger.info(f"LibraryView [go_back_library_navigation]: Back. Current mode: {self.current_view_mode}, Artist ID: {self.current_artist_id}, Album ID: {self.current_album_id}")
         if self.current_view_mode == "songs_for_album":
-            # If current_artist_id is set, we likely came from an artist's album list.
-            if self.current_artist_id is not None and self.current_artist_name: # Check both for robustness
+            if self.current_artist_id is not None and self.current_artist_name:
                 self.current_view_mode = "albums_for_artist"
                 self.load_albums_for_artist(self.current_artist_id, self.current_artist_name)
-            else: # Otherwise, navigating back from a songs list likely means going to all albums.
+            else:
                 self.current_view_mode = "all_albums"
                 self.load_all_albums()
         elif self.current_view_mode == "albums_for_artist":
@@ -564,14 +557,12 @@ class LibraryView(BoxLayout):
             self.current_view_mode = "all_albums"
             self.load_all_albums()
         else: # Default or unknown previous state, go to all_albums
-            # This also handles if current_view_mode was already 'all_albums', pressing back reloads it.
             self.current_view_mode = "all_albums"
             self.load_all_albums()
         self._update_display_path_text() # Update breadcrumb after navigation
 
 
     def on_scan_library_button_press(self):
-        # This button should now take the user to the settings popup where scan controls are.
         app = App.get_running_app()
         if app and hasattr(app, 'open_app_settings'):
             app.open_app_settings()
@@ -594,5 +585,5 @@ class LibraryView(BoxLayout):
         self.current_artist_name = ""
         self.current_view_mode = "all_albums" # Change mode before loading
         self.load_all_albums()
-        self._update_display_path_text() # Update breadcrumb
+        self._update_display_path_text()
 

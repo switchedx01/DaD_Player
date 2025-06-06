@@ -1,7 +1,7 @@
 #:kivy 2.3.0
 #:import format_duration dad_player.utils.format_duration
 
-<NowPlayingView>: # This defines the NowPlayingView widget (which IS a BoxLayout)
+<NowPlayingView>:
 
     canvas.before:
         Color:
@@ -9,13 +9,13 @@
         Rectangle:
             pos: self.pos
             size: self.size
-    minimum_size: dp(800), dp(600) # This applies to NowPlayingView itself
+    minimum_size: dp(800), dp(600)
 
-    BoxLayout: # This is the primary child, containing all visual elements for NowPlayingView
+    BoxLayout: 
         orientation: 'vertical'
         padding: dp(10)
         spacing: dp(5)
-        size_hint: 1, 1 # Make this inner layout fill NowPlayingView
+        size_hint: 1, 1
         # Album Art
         Image:
             id: album_art_np
@@ -24,7 +24,7 @@
             allow_stretch: True
             keep_ratio: True
             mipmap: True
-            pos_hint: {'center_x': 0.5} # Ensure this syntax is correct
+            pos_hint: {'center_x': 0.5}
 
         # Box for Track Info Labels
         BoxLayout:
@@ -81,7 +81,7 @@
         BoxLayout:
             orientation: 'vertical'
             size_hint_y: None
-            height: dp(30) + dp(20) # This is dp(50)
+            height: dp(30) + dp(20)
             spacing: dp(2)
 
             Slider:
@@ -121,26 +121,25 @@
             padding: [dp(5), dp(5)]
             Button:
                 id: shuffle_button_np
-                text: "Shuffle" # Changed to text
-                font_name: 'Roboto' # Keep or adjust font as needed
-                font_size: sp(14) # Adjust font size for text
+                text: "Shuffle"
+                font_name: 'Roboto'
+                font_size: sp(14) 
                 on_release: root.on_shuffle_button_press()
             Button:
                 id: previous_button_np
-                text: "Prev" # Changed to text
+                text: "Prev"
                 font_name: 'Roboto'
                 font_size: sp(14)
                 on_release: root.on_previous_button_press()
             Button:
                 id: play_pause_button_np
-                # Update the text based on Python state for play/pause
                 text: "Pause" if root.play_pause_icon_text == 'pause-circle-outline' else "Play"
                 font_name: 'Roboto'
                 font_size: sp(14)
                 on_release: root.on_play_pause_button_press()
             Button:
                 id: next_button_np
-                text: "Next" # Changed to text
+                text: "Next"
                 font_name: 'Roboto'
                 font_size: sp(14)
                 on_release: root.on_next_button_press()

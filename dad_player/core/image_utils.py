@@ -1,4 +1,3 @@
-# dad_player/core/image_utils.py
 import io
 import os
 from kivy.logger import Logger
@@ -33,17 +32,14 @@ def resize_image_data(raw_image_bytes, target_max_dim=512, output_format="PNG", 
             else:
                 pil_image = pil_image.convert('RGB') # Convert other modes like P, L to RGB
         
-        # Use thumbnail to resize while maintaining aspect ratio
-        # thumbnail modifies the image in-place
         pil_image.thumbnail((target_max_dim, target_max_dim), PILImage.Resampling.LANCZOS)
 
         resized_image_bytes_io = io.BytesIO()
         if output_format.upper() == "JPEG" or output_format.upper() == "JPG":
-            # Ensure image is RGB for JPEG saving, as JPEG doesn't support alpha
             if pil_image.mode == 'RGBA':
                 pil_image = pil_image.convert('RGB')
             pil_image.save(resized_image_bytes_io, format="JPEG", quality=quality, optimize=True)
-        else: # Default to PNG
+        else:
             pil_image.save(resized_image_bytes_io, format="PNG", optimize=True)
         
         resized_image_bytes_io.seek(0)
@@ -60,7 +56,7 @@ def get_placeholder_album_art_path(assets_icons_dir):
     """
     if not os.path.isdir(assets_icons_dir):
         Logger.warning(f"ImageUtils: Assets/icons directory not found at {assets_icons_dir}. Cannot get/create placeholder.")
-        return None # Or a default known path if you bundle a fallback
+        return None
 
     placeholder_path = os.path.join(assets_icons_dir, PLACEHOLDER_ALBUM_FILENAME)
     if os.path.exists(placeholder_path):
@@ -72,8 +68,8 @@ def get_placeholder_album_art_path(assets_icons_dir):
 
     Logger.info(f"ImageUtils: Placeholder album art not found at {placeholder_path}. Attempting to create.")
     try:
-        img_size = 256  # Create a decent sized placeholder
-        img = PILImage.new('RGB', (img_size, img_size), color=(50, 50, 60)) # Dark grey
+        img_size = 256
+        img = PILImage.new('RGB', (img_size, img_size), color=(50, 50, 60))
         draw = ImageDraw.Draw(img)
         try:
             font = ImageFont.truetype("arial.ttf", img_size // 4)

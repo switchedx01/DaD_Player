@@ -1,4 +1,3 @@
-# dad_player/core/library_manager.py
 import sqlite3
 import os
 import threading
@@ -11,7 +10,7 @@ from kivy.event import EventDispatcher
 from pathlib import Path 
 
 import mutagen
-import hashlib # Ensure hashlib is imported
+import hashlib
 
 from dad_player.constants import (
     DATABASE_NAME, SUPPORTED_AUDIO_EXTENSIONS, ART_THUMBNAIL_DIR,
@@ -68,7 +67,6 @@ class LibraryManager(EventDispatcher):
                 Logger.error(f"LibraryManager: Error closing DB connection from {caller_info} in thread {thread_id}: {e}")
 
     def _initialize_db(self):
-        # This method should be robust from previous iterations.
         # Ensure it creates 'filepath' and 'filehash' in DB_TRACKS_TABLE.
         Logger.info(f"LibraryManager: Initializing database at {self.db_path}...")
         conn = self._get_db_connection()
@@ -117,7 +115,6 @@ class LibraryManager(EventDispatcher):
                 )
             """)
             
-            # Verify columns (especially 'filepath' and 'filehash')
             cursor.execute(f"PRAGMA table_info({DB_TRACKS_TABLE})")
             columns_info = cursor.fetchall()
             column_names = [col_info['name'] for col_info in columns_info]
@@ -134,9 +131,9 @@ class LibraryManager(EventDispatcher):
             Logger.info("LibraryManager: Database initialized/schema verified successfully.")
         except sqlite3.Error as e:
             Logger.error(f"LibraryManager: Database schema initialization error: {e}")
-            if conn: conn.rollback() # Rollback on error
+            if conn: conn.rollback()
         finally:
-            if cursor: # Ensure cursor is closed if it was opened
+            if cursor:
                 cursor.close()
             self._close_db_connection(conn, "_initialize_db")
 
@@ -153,7 +150,7 @@ class LibraryManager(EventDispatcher):
         except sqlite3.IntegrityError:
             cursor.execute(f"SELECT id FROM {DB_ARTISTS_TABLE} WHERE name = ?", (artist_name,))
             row = cursor.fetchone()
-            return row['id'] if row else None # Should find it now
+            return row['id'] if row else None
 
     def _get_or_create_album_id(self, cursor, album_name, album_artist_id, year=None):
         if not album_name or not album_name.strip(): return None
@@ -209,7 +206,7 @@ class LibraryManager(EventDispatcher):
             cursor = conn.cursor() # Use the provided connection's cursor
             file_stat = os.stat(filepath)
             last_modified = file_stat.st_mtime
-            current_file_hash = generate_file_hash(filepath) # Use util function
+            current_file_hash = generate_file_hash(filepath)
 
             # Check if track exists and if it needs update
             cursor.execute(f"SELECT id, last_modified, filehash FROM {DB_TRACKS_TABLE} WHERE filepath = ?", (filepath,))
@@ -219,7 +216,6 @@ class LibraryManager(EventDispatcher):
                 # Logger.debug(f"LibraryManager: Track {filepath} is up-to-date.")
                 return False
 
-            # Extract metadata using Mutagen
             audio = mutagen.File(filepath, easy=True) 
             if not audio:
                 Logger.warning(f"LibraryManager: Could not read metadata for: {filepath}")
@@ -229,7 +225,7 @@ class LibraryManager(EventDispatcher):
             title = str(audio.get('title', [os.path.splitext(os.path.basename(filepath))[0]])[0]) if audio.get('title') else os.path.splitext(os.path.basename(filepath))[0]
             artist = str(audio.get('artist', ['Unknown Artist'])[0]) if audio.get('artist') else "Unknown Artist"
             album = str(audio.get('album', ['Unknown Album'])[0]) if audio.get('album') else "Unknown Album"
-            albumartist = str(audio.get('albumartist', [artist])[0]) if audio.get('albumartist') else artist # Fallback to track artist
+            albumartist = str(audio.get('albumartist', [artist])[0]) if audio.get('albumartist') else artist
             
             track_num_str = str(audio.get('tracknumber', ['0'])[0]).split('/')[0] if audio.get('tracknumber') else '0'
             disc_num_str = str(audio.get('discnumber', ['0'])[0]).split('/')[0] if audio.get('discnumber') else '0'
@@ -241,13 +237,13 @@ class LibraryManager(EventDispatcher):
             year = None
             if date_str:
                 if len(date_str) >= 4 and date_str[:4].isdigit(): year = int(date_str[:4])
-                elif date_str.isdigit() and len(date_str) == 4 : year = int(date_str) # Handle YYYY format
+                elif date_str.isdigit() and len(date_str) == 4 : year = int(date_str)
 
             duration = audio.info.length if hasattr(audio, 'info') and hasattr(audio.info, 'length') else 0.0
 
             # Get/Create IDs for artist and album
             track_artist_id = self._get_or_create_artist_id(cursor, artist)
-            album_artist_id_for_album_table = self._get_or_create_artist_id(cursor, albumartist) # Use albumartist for album table
+            album_artist_id_for_album_table = self._get_or_create_artist_id(cursor, albumartist)
             album_id = self._get_or_create_album_id(cursor, album, album_artist_id_for_album_table, year)
 
             # Process album art
@@ -255,21 +251,20 @@ class LibraryManager(EventDispatcher):
             if album_id:
                 cursor.execute(f"SELECT art_filename FROM {DB_ALBUMS_TABLE} WHERE id = ?", (album_id,))
                 album_row = cursor.fetchone()
-                if album_row and not album_row['art_filename']: # Only process if art is missing
+                if album_row and not album_row['art_filename']:
                     raw_art_data = None
                     try:
                         # Attempt to get embedded art (more comprehensive checks)
-                        detailed_audio = mutagen.File(filepath) # Re-open for detailed tags if necessary
+                        detailed_audio = mutagen.File(filepath)
                         if detailed_audio:
-                            if 'APIC:' in detailed_audio: # MP3 (ID3)
+                            if 'APIC:' in detailed_audio:
                                 raw_art_data = detailed_audio['APIC:'].data
-                            elif hasattr(detailed_audio, 'pictures') and detailed_audio.pictures: # FLAC, OGG (VorbisComment with pictures)
+                            elif hasattr(detailed_audio, 'pictures') and detailed_audio.pictures:
                                 raw_art_data = detailed_audio.pictures[0].data
-                            elif 'metadata_block_picture' in detailed_audio: # Some FLAC files store art this way (base64 encoded)
+                            elif 'metadata_block_picture' in detailed_audio:
                                 pic_data_b64_list = detailed_audio.get('metadata_block_picture')
                                 if pic_data_b64_list:
                                     import base64
-                                    # Assuming the first picture block, often base64 encoded after a pipe or directly
                                     pic_data_b64 = pic_data_b64_list[0]
                                     raw_art_data = base64.b64decode(pic_data_b64.split('|')[-1] if isinstance(pic_data_b64, str) and '|' in pic_data_b64 else pic_data_b64)
                         
@@ -279,7 +274,7 @@ class LibraryManager(EventDispatcher):
                                 cursor.execute(f"UPDATE {DB_ALBUMS_TABLE} SET art_filename = ? WHERE id = ?", (art_filename, album_id))
                     except Exception as e_art:
                         Logger.warning(f"LibraryManager: Error extracting/caching art for {filepath}: {e_art}")
-                elif album_row: # Art filename already exists in DB
+                elif album_row:
                     art_filename = album_row['art_filename']
             
             if existing_track:
@@ -306,13 +301,13 @@ class LibraryManager(EventDispatcher):
             Logger.warning(f"LibraryManager: Mutagen error for {filepath}: {e}")
         except sqlite3.Error as e:
             Logger.error(f"LibraryManager: DB error processing file {filepath}: {e}")
-        except AttributeError as e: # For issues like audio.info being None
+        except AttributeError as e:
             Logger.warning(f"LibraryManager: Attribute error processing metadata for {filepath}: {e}")
-        except Exception as e: # Catch-all for other unexpected errors
+        except Exception as e:
             Logger.error(f"LibraryManager: Unexpected error processing file {filepath}: {e}")
             import traceback; traceback.print_exc()
         finally:
-            if cursor: # Ensure cursor is closed if it was opened
+            if cursor:
                 cursor.close() 
         return False
 
@@ -361,7 +356,6 @@ class LibraryManager(EventDispatcher):
         
         if not self.is_scanning : # If cancelled during counting phase
             Logger.info("LibraryManager: Scan cancelled after (or during) file counting phase.")
-            # Final message will be handled by the finally block
             return 
 
         if self._total_files_to_scan == 0: # No files found to scan

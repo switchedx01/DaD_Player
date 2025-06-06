@@ -7,16 +7,12 @@ from kivy.uix.button import Button
 from kivy.properties import ObjectProperty, BooleanProperty, StringProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.logger import Logger
-from kivy.app import App # For accessing app instance if needed
+from kivy.app import App
 
 from dad_player.utils import spx
 from dad_player.constants import (
     APP_VERSION, REPEAT_NONE, REPEAT_SONG, REPEAT_PLAYLIST, REPEAT_MODES_TEXT
 )
-# Import ManageFoldersPopup later to avoid circular dependencies if it also imports this.
-# from .manage_folders_popup import ManageFoldersPopup 
-
-# Load KV file for this popup
 kv_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "settings_popup.kv")
 if os.path.exists(kv_path):
     Builder.load_file(kv_path)
@@ -33,7 +29,7 @@ class PlayerSettingsPopup(Popup):
     autoplay_active = BooleanProperty(False)
     shuffle_active = BooleanProperty(False)
     repeat_mode_text = StringProperty("Repeat: Off")
-    current_repeat_mode = NumericProperty(0) # Store the numeric mode
+    current_repeat_mode = NumericProperty(0)
 
     scan_status_text = StringProperty("")
 
@@ -48,8 +44,6 @@ class PlayerSettingsPopup(Popup):
 
         # Bind to library manager's scanning state if possible (requires LibraryManager to be EventDispatcher or have properties)
         if self.library_manager:
-            # Assuming LibraryManager might have an 'is_scanning' Kivy property
-            # Or we check its state when the popup opens / periodically
             if hasattr(self.library_manager, 'bind'): # Check if it's an EventDispatcher
                  try:
                     self.library_manager.bind(is_scanning=self._update_scan_button_state)
@@ -78,7 +72,6 @@ class PlayerSettingsPopup(Popup):
 
     def _update_scan_status_text(self):
         if self.library_manager and self.library_manager.is_scanning:
-            # If library_manager has a progress message property, use it
             if hasattr(self.library_manager, 'scan_progress_message') and self.library_manager.scan_progress_message:
                 self.scan_status_text = self.library_manager.scan_progress_message
             else:
@@ -113,7 +106,7 @@ class PlayerSettingsPopup(Popup):
             self.settings_manager.set_shuffle(value)
             Logger.info(f"SettingsPopup: Shuffle set to {value}")
             if self.player_engine and hasattr(self.player_engine, 'set_shuffle_mode'):
-                self.player_engine.set_shuffle_mode(value) # PlayerEngine will handle playlist reorder
+                self.player_engine.set_shuffle_mode(value)
 
 
     def cycle_repeat_mode(self):
@@ -129,16 +122,14 @@ class PlayerSettingsPopup(Popup):
 
     def open_manage_folders_popup(self):
         Logger.info("SettingsPopup: Opening Manage Folders Popup.")
-        from .manage_folders_popup import ManageFoldersPopup # Lazy import
+        from .manage_folders_popup import ManageFoldersPopup
         
         if self.settings_manager and self.library_manager:
             # Pass a callback to ManageFoldersPopup so it can notify SettingsPopup
-            # if a rescan is initiated from there, allowing this popup to update its scan status.
             popup = ManageFoldersPopup(
                 settings_manager=self.settings_manager,
                 library_manager=self.library_manager,
                 title="Manage Music Folders"
-                # on_scan_triggered_callback=self._update_scan_button_state # Optional: if MFP directly triggers scan
             )
             popup.open()
         else:
@@ -147,14 +138,14 @@ class PlayerSettingsPopup(Popup):
     def start_library_scan(self, full_rescan=False):
         if self.library_manager and not self.library_manager.is_scanning:
             self.scan_status_text = "Scan starting..."
-            self._update_scan_button_state() # Disable buttons
+            self._update_scan_button_state()
             Logger.info(f"SettingsPopup: Starting library scan (Full: {full_rescan}).")
             
             app = App.get_running_app()
             progress_cb = app.global_scan_progress_update if app and hasattr(app, 'global_scan_progress_update') else self._scan_progress_update_ui
 
             self.library_manager.start_scan_music_library(
-                progress_callback=progress_cb, # Use global app callback
+                progress_callback=progress_cb,
                 full_rescan=full_rescan
             )
         elif self.library_manager and self.library_manager.is_scanning:
@@ -169,7 +160,7 @@ class PlayerSettingsPopup(Popup):
         self.scan_status_text = message_str
         if is_done_bool:
             Logger.info(f"SettingsPopup: Scan finished (notified via local callback). Message: {message_str}")
-            self._update_scan_button_state() # Re-enable buttons
+            self._update_scan_button_state()
             # Refresh library view in the main app
             app = App.get_running_app()
             if app and hasattr(app, 'refresh_library_view_if_current'):

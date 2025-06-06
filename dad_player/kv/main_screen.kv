@@ -1,44 +1,41 @@
-# Kivy version directive removed for broader compatibility
 #:import IconButton dad_player.ui.widgets.icon_button.IconButton
 
 <MainScreen>:
     BoxLayout:
         id: main_screen_layout
         orientation: 'vertical'
-        # spacing: dp(5) # Spacing between top bar and tabbed panel
+        # spacing: dp(5)
 
         BoxLayout:
             size_hint_y: None
-            height: dp(48) # Standard toolbar height
-            padding: [dp(10), dp(5), dp(10), dp(5)] # Horizontal and vertical padding for the bar
-            spacing: dp(10) # Spacing between elements in the top bar
+            height: dp(48)
+            padding: [dp(10), dp(5), dp(10), dp(5)]
+            spacing: dp(10)
 
             Label:
                 text: "DAD Player"
                 font_size: '20sp'
-                size_hint_x: None # Let it take width based on its text
-                width: self.texture_size[0] + dp(10) # Width of text plus a little padding
+                size_hint_x: None
+                width: self.texture_size[0] + dp(10)
                 halign: 'left'
                 valign: 'center'
-                # text_size: self.width, None # Not needed if width is set like above
+                # text_size: self.width, None
 
-            Widget: # Spacer: This will push the DAD Player title to the left and settings to the right
-                size_hint_x: 1 # Takes up all available horizontal space
+            Widget:
+                size_hint_x: 1
 
             Button:
                 id: settings_button_main
-                text: "Settings" # Using text instead of an icon character
-                font_name: "Roboto" # Ensure this font is available and supports your characters
-                size_hint_x: None # Don't let it stretch horizontally
-                width: self.texture_size[0] + dp(20) # Width based on text plus padding
-                height: dp(40) # Fixed height
+                text: "Settings"
+                font_name: "Roboto"
+                size_hint_x: None
+                width: self.texture_size[0] + dp(20)
+                height: dp(40)
                 on_release: root.open_app_settings()
 
         TabbedPanel:
             id: main_tab_panel
             do_default_tab: False
-            tab_pos: 'top_mid' # This centers the tabs
-            tab_height: dp(40) # Adjust as needed
-            size_hint: 1, 1 # Make it fill the remaining space
-            # You'll add TabbedPanelHeader items here programmatically
-            # or define default ones if needed (though your Python code populates them)
+            tab_pos: 'top_mid'
+            tab_height: dp(40)
+            size_hint: 1, 1 

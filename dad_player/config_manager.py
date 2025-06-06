@@ -23,7 +23,7 @@ class ConfigManager:
 
     def add_music_folders(self, new_folders):
         current_folders = self.get_music_folders()
-        updated_folders = list(set(current_folders + [f for f in new_folders if os.path.isdir(f)]))
+        updated_folders = list(set(current_folders + [f for f in new_folders if os.path.isdir(f)])) # Avoid duplicates and ensure it's a directory
         self.config['music_folders'] = updated_folders
         self.save_config()
 

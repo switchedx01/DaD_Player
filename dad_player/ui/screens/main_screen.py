@@ -11,7 +11,7 @@ from kivy.properties import ObjectProperty
 from kivy.app import App
 
 from dad_player.utils import spx
-from dad_player.constants import ALBUM_ART_NOW_PLAYING_SIZE # This might not be used directly here
+from dad_player.constants import ALBUM_ART_NOW_PLAYING_SIZE
 
 now_playing_kv_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "now_playing_view.kv")
 if os.path.exists(now_playing_kv_path):
@@ -20,7 +20,6 @@ if os.path.exists(now_playing_kv_path):
 else:
     Logger.error(f"MainScreen: CRITICAL - KV file for NowPlayingView not found at {now_playing_kv_path}. IDs for NowPlayingView will be missing.")
 
-# --- Load the KV file associated with this MainScreen class ---
 kv_file_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "main_screen.kv")
 if os.path.exists(kv_file_path):
     Builder.load_file(kv_file_path)
@@ -30,10 +29,6 @@ else:
 
 
 class MainScreen(Screen):
-    """
-    The main screen of the application, hosting the TabbedPanel
-    for different views like Now Playing, Library, and Playlist.
-    """
     player_engine = ObjectProperty(None)
     library_manager = ObjectProperty(None)
     settings_manager = ObjectProperty(None)
@@ -47,7 +42,6 @@ class MainScreen(Screen):
         self._tabs_populated = False # Initialize flag
 
     def on_enter(self, *args):
-        """Called when the screen is entered."""
         Logger.info("MainScreen [on_enter]: Entered.")
         
         tab_panel = self.ids.get('main_tab_panel')
@@ -61,7 +55,7 @@ class MainScreen(Screen):
         if not self._tabs_populated:
             Logger.info("MainScreen [on_enter]: Tabs not yet populated. Scheduling _populate_tabs.")
             # Schedule _populate_tabs to allow Kivy's main loop to process KV loading fully.
-            Clock.schedule_once(self._populate_tabs, 0.1) # Small delay
+            Clock.schedule_once(self._populate_tabs, 0.1)
         else:
             Logger.info("MainScreen [on_enter]: Tabs already populated.")
 
@@ -78,7 +72,7 @@ class MainScreen(Screen):
             from dad_player.ui.screens.library_view import LibraryView
             from dad_player.ui.screens.playlist_view import PlaylistView
 
-            tab_font_size = spx(13) # Example font size
+            tab_font_size = spx(13)
             tab_panel.clear_tabs()
             Logger.info("MainScreen [_populate_tabs]: Cleared existing tabs (if any).")
 
@@ -143,7 +137,6 @@ class MainScreen(Screen):
 
 
     def open_app_settings(self):
-        """Opens the application settings popup by calling the app's method."""
         app = App.get_running_app()
         if app and hasattr(app, 'open_app_settings'):
             app.open_app_settings()
@@ -151,7 +144,6 @@ class MainScreen(Screen):
             Logger.warning("MainScreen: Could not get running app instance or 'open_app_settings' method to open settings.")
 
     def switch_to_tab(self, tab_text):
-        """Switches the TabbedPanel to the tab with the given text."""
         tab_panel = self.ids.get('main_tab_panel')
         if tab_panel:
             target_tab_header = next((tab for tab in tab_panel.tab_list if tab.text == tab_text), None)
@@ -167,10 +159,6 @@ class MainScreen(Screen):
             Logger.error("MainScreen: 'main_tab_panel' not found in ids when trying to switch tab.")
             
     def refresh_visible_library_content(self):
-        """
-        If the library tab is visible, calls its refresh method.
-        This can be called by the app after a library scan.
-        """
         tab_panel = self.ids.get('main_tab_panel')
         if tab_panel and tab_panel.current_tab and tab_panel.current_tab.text == "Library":
             library_view_widget = tab_panel.current_tab.content
@@ -179,7 +167,6 @@ class MainScreen(Screen):
                 library_view_widget.refresh_library_view()
 
     def set_initial_scan_prompt(self, message):
-        """Used by App class to set a status/prompt in the Library view on startup if needed."""
         def update_library_status(dt):
             tab_panel = self.ids.get('main_tab_panel')
             if tab_panel:

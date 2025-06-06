@@ -30,19 +30,19 @@
             width: dp(48)
             on_release: root.on_shuffle_playlist_button_press()
 
-        Button: # Standard button for clear
+        Button:
             text: "Clear"
             font_size: utils.spx(12)
             size_hint_x: None
             width: dp(80)
             on_release: root.on_clear_playlist_button_press()
-            background_color: [0.7, 0.3, 0.3, 1] # Reddish
+            background_color: [0.7, 0.3, 0.3, 1]
             background_normal: ''
 
     RecycleView:
         id: playlist_rv
         data: root.playlist_data
-        viewclass: 'SongListItem' # Reuse the SongListItem widget
+        viewclass: 'SongListItem'
         scroll_type: ['bars', 'content']
         bar_width: dp(10)
         
@@ -59,7 +59,7 @@
         id: playlist_status_label
         text: root.status_text
         size_hint_y: None
-        height: self.texture_size[1] if root.status_text else 0 # Only take space if text exists
+        height: self.texture_size[1] if root.status_text else 0
         opacity: 1 if root.status_text else 0
         font_size: utils.spx(14)
         color: [0.8, 0.8, 0.8, 1]

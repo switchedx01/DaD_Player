@@ -22,7 +22,7 @@ class SettingsManager:
             CONFIG_KEY_AUTOPLAY: True,
             CONFIG_KEY_SHUFFLE: False,
             CONFIG_KEY_REPEAT: REPEAT_NONE,
-            CONFIG_KEY_LAST_VOLUME: 0.5, # Store volume as 0.0 to 1.0
+            CONFIG_KEY_LAST_VOLUME: 1, #Volume set to 1 due to missing volume controls
         }
         self.last_error = None # Initialize last_error
         self._load_settings()

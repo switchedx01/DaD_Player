@@ -13,7 +13,6 @@ from dad_player.constants import ALBUM_ART_LIST_SIZE # For art in list items
 from dad_player.ui.widgets.song_list_item import SongListItem
 
 
-# Load the KV file for this view
 kv_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "playlist_view.kv")
 if os.path.exists(kv_path):
     Builder.load_file(kv_path)
@@ -168,7 +167,7 @@ class PlaylistView(BoxLayout):
             new_shuffle_state = not self.player_engine.shuffle_mode # Toggle
             self.player_engine.set_shuffle_mode(new_shuffle_state)
             shuffle_button = self.ids.get('shuffle_playlist_button')
-            if shuffle_button: # Assuming an IconButton that can change appearance
+            if shuffle_button:
                 shuffle_button.icon_color_normal = [0.1, 0.7, 0.9, 1] if new_shuffle_state else [0.9, 0.9, 0.9, 1]
 
 

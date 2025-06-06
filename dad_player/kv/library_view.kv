@@ -7,7 +7,6 @@
 
 <LibraryView>:
     orientation: 'vertical'
-    # The debug_label from Python will be added to library_header_bar
 
     BoxLayout:
         id: library_header_bar
@@ -131,15 +130,11 @@
             scroll_type: ['bars', 'content']
             bar_width: dp(10)
             RecycleGridLayout:
-                # Ensure this layout manager gets width from its parent RV
                 size_hint: 1, None 
                 height: self.minimum_height 
-                # Make cols calculation simpler for debugging, ensure self.width is used.
-                # If self.width is 0 initially, this might still be an issue.
-                # Fallback to a fixed number of columns if width is too small.
                 cols: max(1, int(self.width / dp(180))) if self.width > dp(180) else 2 # Default to 2 cols if width is small
                 default_size: dp(170), dp(220) # Fixed size for children
-                default_size_hint: None, None  # Children will not use size_hint
+                default_size_hint: None, None 
                 padding: dp(10)
                 spacing: dp(10)
 

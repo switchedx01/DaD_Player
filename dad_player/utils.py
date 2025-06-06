@@ -1,28 +1,24 @@
 # dad_player/utils.py
 import os
-import sys # Needed for get_user_data_dir_for_app
-import hashlib # Needed for generate_file_hash
-import re # Needed for sanitize_filename_for_cache
+import sys
+import hashlib
+import re
 
 from kivy.logger import Logger
 from kivy.metrics import sp, dp
-from kivy.core.window import Window # Import Window
+from kivy.core.window import Window
 
-# --- Constants for spx fallback ---
 DEFAULT_DENSITY_FALLBACK = 1.0
-SPX_DEBUG_LOGGING = True # Set to False to reduce console noise once resolved
+SPX_DEBUG_LOGGING = True
 
 def spx(value_in_pixels):
     global SPX_DEBUG_LOGGING
     try:
-        # Check if Window exists and has the density attribute
         if Window and hasattr(Window, 'density') and Window.density > 0:
-            # Using dp() for a general scaling based on density.
-            # If this value was specifically for font sizes, Kivy's sp() is usually preferred.
-            scaled_value = value_in_pixels * (DEFAULT_DENSITY_FALLBACK / Window.density) 
+            scaled_value = value_in_pixels * (DEFAULT_DENSITY_FALLBACK / Window.density)
             if SPX_DEBUG_LOGGING:
                 Logger.trace(f"Utils: spx({value_in_pixels}) -> Kivy dp({value_in_pixels}) approx using density {Window.density} -> {dp(value_in_pixels)}")
-            return dp(value_in_pixels) # Prefer Kivy's dp() for consistency
+            return dp(value_in_pixels)
         else:
             if SPX_DEBUG_LOGGING:
                 status = "Window is None" if not Window else "Window.density not available or invalid"
@@ -38,11 +34,7 @@ def spx(value_in_pixels):
         return value_in_pixels
 
 def get_user_data_dir_for_app():
-    """
-    Returns the user data directory for the application.
-    Creates the directory if it doesn't exist.
-    """
-    app_name = "DadPlayer" 
+    app_name = "DadPlayer"
     try:
         from dad_player.constants import APP_NAME
         app_name = APP_NAME
@@ -82,7 +74,6 @@ def format_duration(seconds):
 
 
 def generate_file_hash(filepath, block_size=65536):
-    """Generates an MD5 hash for a file."""
     if not os.path.exists(filepath):
         Logger.warning(f"Utils: File not found for hashing: {filepath}")
         return None

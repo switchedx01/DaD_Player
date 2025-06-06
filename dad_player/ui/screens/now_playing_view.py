@@ -303,7 +303,7 @@ class NowPlayingView(BoxLayout):
                 else: # resize_image_data failed
                     Logger.warning("NowPlayingView [load_album_art_for_current_track]: resize_image_data returned None for main art. Applying placeholder.")
                     self._apply_placeholder_art() # Apply placeholder for main art if resize fails
-                    return # Don't try to blur if main art failed
+                    return
 
                 # Blurred background
                 pil_for_blur = Image.open(BytesIO(raw_art_data)) # Use fresh BytesIO

@@ -18,7 +18,7 @@
             size_hint_y: None
             height: self.texture_size[1]
             font_size: utils.spx(13)
-            padding: [dp(5), dp(5)]  # Updated from padding_y
+            padding: [dp(5), dp(5)]
             text_size: self.width - dp(10), None
             halign: 'center'
 
@@ -64,7 +64,7 @@
         valign: 'middle'
         shorten: True
         shorten_from: 'left'
-        text_size: self.width - dp(90), None # Adjusted text_size to account for the button width
+        text_size: self.width - dp(90), None
     Button:
         text: "Remove"
         font_size: utils.spx(12)
@@ -117,7 +117,7 @@
             size_hint_y: None
             height: self.texture_size[1] if root.status_message else 0
             opacity: 1 if root.status_message else 0
-            padding: [0, dp(5)]  # Updated from padding_y
+            padding: [0, dp(5)]
 
         Button:
             text: "Add New Folder..."

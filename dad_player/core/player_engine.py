@@ -1,14 +1,13 @@
-# dad_player/core/player_engine.py
 import mutagen
 import vlc
 import time
-import threading # Not strictly used in the current snippet but often in player engines
+import threading
 import os
-import random # For shuffle
+import random
 from kivy.logger import Logger
-from kivy.clock import Clock # For scheduling events on Kivy's main thread
+from kivy.clock import Clock
 from kivy.event import EventDispatcher
-from kivy.app import App # For accessing library_manager if needed for metadata
+from kivy.app import App
 from kivy.properties import ObjectProperty
 
 from dad_player.constants import REPEAT_NONE, REPEAT_SONG, REPEAT_PLAYLIST, REPEAT_MODES_TEXT
@@ -25,10 +24,10 @@ class PlayerEngine(EventDispatcher):
         'on_shuffle_mode_changed', 'on_repeat_mode_changed', 'on_volume_changed'
     )
 
-    current_song = ObjectProperty(None, allownone=True) # Kivy property for the current song path
+    current_song = ObjectProperty(None, allownone=True)
 
-    def __init__(self, settings_manager=None, **kwargs): # Made settings_manager optional & added **kwargs
-        super().__init__(**kwargs) # Pass **kwargs to EventDispatcher
+    def __init__(self, settings_manager=None, **kwargs):
+        super().__init__(**kwargs)
         
         if settings_manager is None:
             Logger.warning("PlayerEngine: Initialized WITHOUT a settings_manager instance!")
@@ -37,7 +36,6 @@ class PlayerEngine(EventDispatcher):
         self.settings_manager = settings_manager 
 
         try:
-            # Common VLC instance arguments to reduce verbosity and potential issues
             instance_args = ["--no-video", "--quiet", "--no-metadata-network-access", "--no-interact"]
             self.vlc_instance = vlc.Instance(" ".join(instance_args))
             self.player = self.vlc_instance.media_player_new()
@@ -51,11 +49,11 @@ class PlayerEngine(EventDispatcher):
         self.current_media_duration_ms = 0
         self._is_playing_internal = False
         self._is_paused_internal = False
-        self._was_paused_before_play = False # To help differentiate play from resume for events
+        self._was_paused_before_play = False
 
-        self._volume = 50  # Default volume 0-100
-        if self.player: # Ensure player exists before setting volume
-            self.set_volume(self._volume, dispatch_event=False) # Set initial volume without dispatching
+        self._volume = 100
+        if self.player:
+            self.set_volume(self._volume, dispatch_event=False)
 
         # VLC Event Manager
         if self.player:
@@ -241,9 +239,7 @@ class PlayerEngine(EventDispatcher):
         self.player.set_media(media)
         media.release() 
 
-        # Try to get duration. It might be 0 if not parsed yet.
-        # player.get_length() can be unreliable immediately after set_media.
-        # We will try to get it with _fetch_initial_duration after a short delay.
+
         self.current_media_duration_ms = 0 # Assume 0 initially
         Clock.schedule_once(self._fetch_initial_duration, 0.2) # MODIFIED: Increased delay slightly
 
@@ -264,10 +260,9 @@ class PlayerEngine(EventDispatcher):
             if media:
                 duration = media.get_duration()
                 if duration > 0:
-                    if self.current_media_duration_ms != duration: # Check if it's a new, valid duration
+                    if self.current_media_duration_ms != duration:
                         self.current_media_duration_ms = duration
                         Logger.info(f"PlayerEngine: Fetched initial duration (delayed): {self.current_media_duration_ms}ms for {self.current_media_path}")
-                        # Dispatch on_media_loaded again with the correct duration
                         self._schedule_dispatch('on_media_loaded', self.current_media_path, self.current_media_duration_ms)
                 else:
                     Logger.warning(f"PlayerEngine: Still no valid duration after delay for {self.current_media_path}. Will try on play.")
@@ -342,7 +337,7 @@ class PlayerEngine(EventDispatcher):
         return self.player.get_time() if self.player and self.current_media_path else 0
 
     def get_current_duration_ms(self):
-        if self.player and self.current_media_duration_ms <= 0: # If duration is unknown, try to get it
+        if self.player and self.current_media_duration_ms <= 0:
             media = self.player.get_media()
             if media:
                 duration = media.get_duration()

@@ -3,7 +3,6 @@
 <AlbumGridItem>:
     orientation: 'vertical'
     size_hint_y: None
-    # Height is set by RecycleGridLayout's default_size (e.g., dp(220))
     padding: dp(5)
     spacing: dp(5)
     canvas.before:
@@ -48,8 +47,6 @@
         shorten_from: 'right'
 
 <ArtistListItem>:
-    # Label is added and primarily styled in Python __init__ (including text color).
-    # KV here defines size and border.
     size_hint_y: None
     height: dp(48)
     padding: [dp(10), dp(5)]
@@ -65,7 +62,6 @@
         Line:
             rectangle: self.x, self.y, self.width, self.height
             width: 1
-    # The Label widget (self.name_label) is added in Python
 
 <SongListItem>:
     orientation: 'horizontal' # Changed for better layout
@@ -76,8 +72,7 @@
 
     canvas.before:
         Color:
-            # Dark grey background, similar to your app's theme
-            rgba: (0.18, 0.18, 0.18, 1) if root.track_id else (0.15, 0.15, 0.15, 1) # Slightly different if it's a placeholder
+            rgba: (0.18, 0.18, 0.18, 1) if root.track_id else (0.15, 0.15, 0.15, 1)
         Rectangle:
             pos: self.pos
             size: self.size
@@ -93,7 +88,7 @@
         size_hint_x: None
         width: self.height # Make it square, using the item's height
         allow_stretch: True
-        keep_ratio: True # Keep aspect ratio for album art
+        keep_ratio: True
         mipmap: True
 
     BoxLayout:
@@ -127,6 +122,6 @@
         text: root.duration_text
         font_size: sp(12)
         color: 0.7, 0.7, 0.7, 1 # Dimmed grey text
-        size_hint_x: 0.15 # Give it some space
+        size_hint_x: 0.15
         halign: 'right'
         valign: 'middle'

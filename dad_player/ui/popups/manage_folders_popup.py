@@ -5,8 +5,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivy.lang import Builder
 from kivy.logger import Logger
-from kivy.uix.filechooser import FileChooserListView # Using ListView for simplicity
-from kivy.app import App # For accessing app instance to trigger global actions like rescan
+from kivy.uix.filechooser import FileChooserListView
+from kivy.app import App
 
 from dad_player.utils import spx
 
@@ -19,11 +19,11 @@ else:
 
 class FolderChooserPopup(Popup):
     """A popup for choosing a folder."""
-    on_folder_selected = ObjectProperty(None) # Callback: func(selected_path)
+    on_folder_selected = ObjectProperty(None)
 
     def __init__(self, initial_path=None, on_folder_selected=None, **kwargs):
         super().__init__(**kwargs)
-        self.on_folder_selected = on_folder_selected  # Explicitly set as instance attribute
+        self.on_folder_selected = on_folder_selected
         Logger.info(f"FolderChooserPopup: Initialized with on_folder_selected: {self.on_folder_selected}")
 
         # self.title = "Select Music Folder"
@@ -31,9 +31,8 @@ class FolderChooserPopup(Popup):
         
         start_path = initial_path or os.path.expanduser("~")
         if not os.path.isdir(start_path): 
-            start_path = os.path.abspath(os.sep) # Root path as fallback
+            start_path = os.path.abspath(os.sep)
 
-        # Access the file chooser defined in KV
         file_chooser_widget = self.ids.get('folder_chooser_fc')
         if file_chooser_widget:
             file_chooser_widget.path = start_path
@@ -80,14 +79,12 @@ class ManageFoldersPopup(Popup):
     def load_music_folders(self):
         if self.settings_manager:
             folders = self.settings_manager.get_music_folders()
-            # Data for RecycleView's FolderListItem (defined in manage_folders_popup.kv)
             self.music_folders_data = [{'path': folder, 'root_popup': self} for folder in folders]
             if not folders:
                 self.status_message = "No music folders added yet."
             else:
                 self.status_message = ""
-            Logger.info(f"ManageFoldersPopup: Loaded music folders: {folders}") #Log loaded folders
-        else:
+            Logger.info(f"ManageFoldersPopup: Loaded music folders: {folders}")
             Logger.error("ManageFoldersPopup: SettingsManager not available.")
             self.status_message = "Error: Settings manager unavailable."
 
@@ -136,7 +133,7 @@ class ManageFoldersPopup(Popup):
         else:
             self.status_message = "Error: Settings manager unavailable."
 
-    def remove_folder_from_list_item(self, folder_path_to_remove): # Renamed to avoid conflict
+    def remove_folder_from_list_item(self, folder_path_to_remove):
         """Removes a folder, called from FolderListItem's button."""
         if self.settings_manager:
             if self.settings_manager.remove_music_folder(folder_path_to_remove):
@@ -196,7 +193,7 @@ class ManageFoldersPopup(Popup):
 
 
     def _simple_scan_status_update(self, progress, message, is_done):
-        self.status_message = message # Update status within this popup
+        self.status_message = message
         if is_done:
             Logger.info(f"ManageFoldersPopup: Direct scan (if initiated from here) completed. Message: {message}")
             self.load_music_folders() 

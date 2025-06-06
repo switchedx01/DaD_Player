@@ -25,7 +25,7 @@ class ArtistListItem(ButtonBehavior, BoxLayout):
                 halign='left',
                 valign='middle', 
                 size_hint_x=1,
-                color=[1, 1, 1, 1]  # Explicitly set text to WHITE
+                color=[1, 1, 1, 1]
             )
             self.name_label.bind(size=self._update_label_text_size)
             self.add_widget(self.name_label)

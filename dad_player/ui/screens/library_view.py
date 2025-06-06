@@ -1,4 +1,3 @@
-# dad_player/ui/screens/library_view.py
 import os
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label # Added for debug label
@@ -65,7 +64,6 @@ class LibraryView(BoxLayout):
 
 
     def _update_debug_graphics(self, *args):
-        # Debug graphics removed
         pass
 
     def _update_debug_label(self, *args):
@@ -129,11 +127,9 @@ class LibraryView(BoxLayout):
         Logger.info("LibraryView [_post_init_setup]: Post-init setup starting.")
         self._update_debug_label_and_graphics() # Call this early
 
-        # Ensure debug_label is added to the correct parent if not already
         if self.debug_label and not self.debug_label.parent:
             header_bar = self.ids.get('library_header_bar')
             if header_bar and self.debug_label not in header_bar.children:
-                # Adding it as the first child for visibility or specific order
                 header_bar.add_widget(self.debug_label, index=len(header_bar.children))
             elif self.ids.get('main_library_layout') and self.debug_label not in self.ids.main_library_layout.children: # Fallback
                 self.ids.main_library_layout.add_widget(self.debug_label, index=len(self.ids.main_library_layout.children))
@@ -146,7 +142,6 @@ class LibraryView(BoxLayout):
             self._placeholder_art = get_placeholder_album_art_path(app.icons_dir)
             # Logger.info(f"LibraryView [_post_init_setup]: Placeholder art path set using app.icons_dir: {self._placeholder_art}")
         else:
-            # This relative path assumes library_view.py is in dad_player/ui/screens/
             assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "assets")
             icons_dir = os.path.join(assets_dir, "icons")
             self._placeholder_art = get_placeholder_album_art_path(icons_dir)
@@ -181,7 +176,6 @@ class LibraryView(BoxLayout):
         Logger.info(f"LibraryView [on_library_manager_scanning_change]: Scanning state changed from {self._was_scanning} to {current_is_scanning_value}")
         if self._was_scanning and not current_is_scanning_value: # Scan just finished
             Logger.info("LibraryView [on_library_manager_scanning_change]: Scan finished. Scheduling view refresh.")
-            # Schedule with a slight delay to allow DB operations to fully settle if needed
             Clock.schedule_once(lambda dt: self.refresh_library_view(), 0.2)
         self._was_scanning = current_is_scanning_value # Update the tracking state
 
@@ -206,7 +200,7 @@ class LibraryView(BoxLayout):
                 Logger.warning("LibraryView [refresh_library_view]: 'albums_for_artist' mode but current_artist_id is None. Defaulting to all_albums.")
                 self.load_all_albums()
         elif current_mode_before_refresh == "songs_for_album":
-            if self.current_album_id is not None: # Ensure context is valid
+            if self.current_album_id is not None:
                 self.load_songs_for_album(self.current_album_id, self.current_album_name)
             else: # Fallback if context was lost
                 Logger.warning("LibraryView [refresh_library_view]: 'songs_for_album' mode but current_album_id is None. Defaulting to all_albums.")

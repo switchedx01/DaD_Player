@@ -17,7 +17,7 @@ from dad_player.constants import (
     DATABASE_NAME, SUPPORTED_AUDIO_EXTENSIONS, ART_THUMBNAIL_DIR,
     ALBUM_ART_GRID_SIZE, DB_TRACKS_TABLE, DB_ALBUMS_TABLE, DB_ARTISTS_TABLE
 )
-from dad_player.utils import generate_file_hash, sanitize_filename_for_cache # generate_file_hash was missing
+from dad_player.utils import generate_file_hash, sanitize_filename_for_cache
 from .image_utils import resize_image_data 
 
 try:
@@ -52,7 +52,6 @@ class LibraryManager(EventDispatcher):
     def _get_db_connection(self):
         thread_id = threading.get_ident()
         try:
-            # Using a timeout for connect, and ensuring row_factory is set for this connection
             conn = sqlite3.connect(self.db_path, timeout=10) 
             conn.row_factory = sqlite3.Row 
             return conn
@@ -76,7 +75,7 @@ class LibraryManager(EventDispatcher):
         if not conn: 
             Logger.error("LibraryManager: _initialize_db failed to get DB connection.")
             return
-        cursor = None # Initialize cursor to None
+        cursor = None
         try:
             cursor = conn.cursor()
             # Create artists table
@@ -125,7 +124,6 @@ class LibraryManager(EventDispatcher):
             Logger.info(f"LibraryManager: Columns in {DB_TRACKS_TABLE}: {column_names}")
 
             if 'filepath' not in column_names:
-                # This should ideally not happen if the CREATE TABLE is correct
                 Logger.critical(f"LibraryManager: CRITICAL - 'filepath' column MISSING from {DB_TRACKS_TABLE} after CREATE TABLE!")
             
             if 'filehash' not in column_names:
@@ -152,7 +150,7 @@ class LibraryManager(EventDispatcher):
         try:
             cursor.execute(f"INSERT INTO {DB_ARTISTS_TABLE} (name) VALUES (?)", (artist_name,))
             return cursor.lastrowid
-        except sqlite3.IntegrityError: # In case of a race condition if another thread inserted it
+        except sqlite3.IntegrityError:
             cursor.execute(f"SELECT id FROM {DB_ARTISTS_TABLE} WHERE name = ?", (artist_name,))
             row = cursor.fetchone()
             return row['id'] if row else None # Should find it now
@@ -167,7 +165,7 @@ class LibraryManager(EventDispatcher):
             query += "artist_id = ?"
             params.append(album_artist_id)
         else:
-            query += "artist_id IS NULL" # Handle albums with no specific artist (e.g. Various Artists compilations)
+            query += "artist_id IS NULL"
         
         cursor.execute(query, tuple(params))
         row = cursor.fetchone()
@@ -175,16 +173,16 @@ class LibraryManager(EventDispatcher):
         try:
             cursor.execute(f"INSERT INTO {DB_ALBUMS_TABLE} (name, artist_id, year) VALUES (?, ?, ?)", (album_name, album_artist_id, year))
             return cursor.lastrowid
-        except sqlite3.IntegrityError: # Race condition or already exists
-            cursor.execute(query, tuple(params)) # Try fetching again
+        except sqlite3.IntegrityError:
+            cursor.execute(query, tuple(params))
             row = cursor.fetchone()
             return row['id'] if row else None
 
     def _cache_album_art(self, raw_art_data, album_id, album_name):
-        # Uses resize_image_data from image_utils.py
+
         if not raw_art_data or not PILImage: return None
         
-        # Try WEBP first, then PNG as fallback
+
         resized_stream = resize_image_data(raw_art_data, target_max_dim=ALBUM_ART_GRID_SIZE, output_format="WEBP", quality=80) 
         file_ext = ".webp"
         if not resized_stream:
@@ -192,9 +190,7 @@ class LibraryManager(EventDispatcher):
              file_ext = ".png"
 
         if resized_stream:
-            # Create a more unique filename based on album_id and sanitized name
             sanitized_album_name = sanitize_filename_for_cache(album_name if album_name else "unknown_album")
-            # Using a small hash of ID and name to avoid overly long filenames and ensure uniqueness
             name_hash = hashlib.md5(f"{album_id}_{sanitized_album_name}".encode()).hexdigest()[:10]
             art_filename = f"art_{name_hash}{file_ext}"
             art_filepath = self.art_cache_dir / art_filename 
@@ -208,8 +204,6 @@ class LibraryManager(EventDispatcher):
         return None
 
     def _process_file_metadata(self, filepath, conn): 
-        # This method uses a connection passed to it, typically within a transaction
-        # It should not open/close its own connection here.
         cursor = None
         try:
             cursor = conn.cursor() # Use the provided connection's cursor
@@ -223,7 +217,7 @@ class LibraryManager(EventDispatcher):
 
             if existing_track and existing_track['last_modified'] == last_modified and existing_track['filehash'] == current_file_hash:
                 # Logger.debug(f"LibraryManager: Track {filepath} is up-to-date.")
-                return False # No changes needed, not counted as "processed" for new data
+                return False
 
             # Extract metadata using Mutagen
             audio = mutagen.File(filepath, easy=True) 
@@ -289,7 +283,6 @@ class LibraryManager(EventDispatcher):
                     art_filename = album_row['art_filename']
             
             if existing_track:
-                # This is an existing track, prepare for UPDATE
                 track_data_tuple_update = (
                     current_file_hash, title, album_id, track_artist_id, track_num, 
                     disc_num, duration, genre, year, last_modified, existing_track['id'] 
@@ -299,7 +292,6 @@ class LibraryManager(EventDispatcher):
                                 disc_number=?, duration=?, genre=?, year=?, last_modified=? 
                                 WHERE id=?""", track_data_tuple_update)
             else:
-                # This is a new track, prepare for INSERT
                 track_data_tuple_insert = (
                     filepath, current_file_hash, title, album_id, track_artist_id, 
                     track_num, disc_num, duration, genre, year, last_modified
@@ -309,13 +301,11 @@ class LibraryManager(EventDispatcher):
                                 disc_number, duration, genre, year, last_modified) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", track_data_tuple_insert)
             # conn.commit() # Commit is handled by the calling thread function after a batch
-            return True # Indicates successful processing or update
-        
+            return True
         except mutagen.MutagenError as e:
             Logger.warning(f"LibraryManager: Mutagen error for {filepath}: {e}")
         except sqlite3.Error as e:
             Logger.error(f"LibraryManager: DB error processing file {filepath}: {e}")
-            # Do not rollback here, let the main scan loop handle transaction
         except AttributeError as e: # For issues like audio.info being None
             Logger.warning(f"LibraryManager: Attribute error processing metadata for {filepath}: {e}")
         except Exception as e: # Catch-all for other unexpected errors
@@ -329,11 +319,10 @@ class LibraryManager(EventDispatcher):
     def _scan_music_folders_thread_target(self, music_folders, full_rescan=False):
         scan_thread_id = threading.get_ident()
         Logger.critical(f"LibraryManager: SCAN THREAD {scan_thread_id} STARTED. Folders to scan: {music_folders}")
-        # Logger.info(f"LibraryManager: Scan thread {scan_thread_id} started. Full rescan: {full_rescan}") # Duplicate, remove one
 
         self._files_scanned_so_far = 0
-        self._total_files_to_scan = 0 # This will be populated by the counting loop
-        files_processed_this_scan = 0 # Tracks successfully added/updated in DB
+        self._total_files_to_scan = 0
+        files_processed_this_scan = 0
 
         # --- Phase 1: Count total files to scan ---
         if self._progress_callback:
@@ -518,9 +507,6 @@ class LibraryManager(EventDispatcher):
         if self.is_scanning and self._scan_thread and self._scan_thread.is_alive():
             Logger.info("LibraryManager: Attempting to stop library scan...")
             self.is_scanning = False # Signal thread to stop
-            # The thread will check this flag and exit. 
-            # No need to join here from main thread, can cause UI freeze.
-            # The 'finally' block in the thread target will handle cleanup.
         else:
             Logger.info("LibraryManager: No active scan in progress to stop or thread already finished.")
             self.is_scanning = False # Ensure it's false if called when not scanning

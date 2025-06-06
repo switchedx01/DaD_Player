@@ -12,11 +12,7 @@ from kivy.app import App
 
 from dad_player.utils import spx
 from dad_player.constants import ALBUM_ART_NOW_PLAYING_SIZE # This might not be used directly here
-# NowPlayingView is imported, but its KV needs to be loaded before instantiation.
-# from dad_player.ui.screens.now_playing_view import NowPlayingView # Keep this import
 
-# --- Explicitly load KV file for NowPlayingView ---
-# Assuming now_playing_view.kv is in dad_player/kv/
 now_playing_kv_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "now_playing_view.kv")
 if os.path.exists(now_playing_kv_path):
     Builder.load_file(now_playing_kv_path)
@@ -78,14 +74,11 @@ class MainScreen(Screen):
             return
 
         try:
-            # Ensure these are imported here if not at module level, or confirm they are
             from dad_player.ui.screens.now_playing_view import NowPlayingView
             from dad_player.ui.screens.library_view import LibraryView
             from dad_player.ui.screens.playlist_view import PlaylistView
 
             tab_font_size = spx(13) # Example font size
-
-            # Clear existing tabs if any (though _tabs_populated should prevent re-population)
             tab_panel.clear_tabs()
             Logger.info("MainScreen [_populate_tabs]: Cleared existing tabs (if any).")
 

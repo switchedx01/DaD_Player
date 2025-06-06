@@ -7,8 +7,6 @@ from kivy.lang import Builder
 from kivy.logger import Logger
 from kivy.clock import Clock
 from kivy.app import App
-
-# Assuming this is your utils.py and it has format_duration
 from dad_player.utils import format_duration, dp, sp
 from dad_player.core.image_utils import get_placeholder_album_art_path
 
@@ -64,7 +62,7 @@ class LibraryView(BoxLayout):
 
     def _update_debug_label_and_graphics(self, *args):
         self._update_debug_label()
-        # self._update_debug_graphics() # Graphics part removed
+
 
     def _update_debug_graphics(self, *args):
         # Debug graphics removed
@@ -75,9 +73,6 @@ class LibraryView(BoxLayout):
             if not self.debug_label.parent:
                 header_bar = self.ids.get('library_header_bar')
                 if header_bar and self.debug_label not in header_bar.children:
-                    # Try to add it at a specific position, e.g., before the first spacer or button
-                    # This might require knowing the layout of library_header_bar better.
-                    # For simplicity, adding at the end for now.
                     header_bar.add_widget(self.debug_label)
                 elif not header_bar and self.ids.get('main_library_layout') and self.debug_label not in self.ids.main_library_layout.children:
                     self.ids.main_library_layout.add_widget(self.debug_label, index=len(self.ids.main_library_layout.children))
@@ -105,13 +100,17 @@ class LibraryView(BoxLayout):
         # else:
         #     detailed_log.append("  Self.ids is empty.")
         # Logger.critical("\n".join(detailed_log))
+        '''
+
+        The previous line was used in terminal logging for debug, can be added later to ensure things are operating correctly
+
+        '''
         return super().on_touch_down(touch)
 
     def _trigger_display_path_update(self, *args):
         self._update_display_path_text()
 
     def _update_display_path_text(self, *args):
-        # This updates the text for the "breadcrumb" style label
         if self.current_view_mode == 'albums_for_artist':
             self._display_path_text = self.current_artist_name if self.current_artist_name else "Artist Albums"
         elif self.current_view_mode == 'songs_for_album':
@@ -146,7 +145,7 @@ class LibraryView(BoxLayout):
         if app and hasattr(app, 'icons_dir') and app.icons_dir:
             self._placeholder_art = get_placeholder_album_art_path(app.icons_dir)
             # Logger.info(f"LibraryView [_post_init_setup]: Placeholder art path set using app.icons_dir: {self._placeholder_art}")
-        else: # Fallback if app.icons_dir is not ready
+        else:
             # This relative path assumes library_view.py is in dad_player/ui/screens/
             assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "assets")
             icons_dir = os.path.join(assets_dir, "icons")
@@ -225,8 +224,6 @@ class LibraryView(BoxLayout):
         elif item_type == "album":
             return lambda *args: self.on_album_selected(item_id, item_name_or_title)
         elif item_type == "song":
-            # For songs, we also need the filepath for the player_engine.
-            # The item_id for a song is its track_id.
             return lambda *args: self.on_song_selected(item_id, item_name_or_title)
         return None # Should not happen if item_type is always valid
 
@@ -347,8 +344,6 @@ class LibraryView(BoxLayout):
             self._update_display_path_text()
             return
 
-        # Fetch details for the specific album we are viewing to get its primary artist and art
-        # This is slightly inefficient as get_albums_by_artist fetches all, but robust.
         if self.library_manager:
             all_albums_from_db = self.library_manager.get_albums_by_artist(artist_id=None) # Get all albums to find the current one
             if all_albums_from_db: # Check if the list is not empty
@@ -379,8 +374,6 @@ class LibraryView(BoxLayout):
             album_primary_artist_name = self.current_artist_name
             Logger.info(f"LibraryView: Set album_primary_artist_name='{album_primary_artist_name}' (from self.current_artist_name as fallback).")
         else:
-            # This case means target_album_info was missing, or had no artist,
-            # and we didn't navigate from a specific artist.
             Logger.info(f"LibraryView: album_primary_artist_name defaulted/remained 'Unknown Artist'. target_album_info_artist: {target_album_info.get('artist_name') if target_album_info else 'N/A'}, self.current_artist_name: {self.current_artist_name}")
 
 
@@ -398,7 +391,7 @@ class LibraryView(BoxLayout):
                 if track_specific_artist and track_specific_artist.strip() and track_specific_artist.lower() != "unknown artist":
                     artist_name_for_display = track_specific_artist
                 
-                # --- ENHANCED LOGGING FOR THIS SPECIFIC ISSUE ---
+                # --- ENHANCED LOGGING ---
                 Logger.info(f"LibraryView: ---- Track {i+1} ('{track_title}') ----")
                 Logger.info(f"LibraryView: Raw DB data for track: {track}")
                 Logger.info(f"LibraryView: TrackSpecificArtist (from track.get('artist_name')): '{track_specific_artist}'")
@@ -502,11 +495,7 @@ class LibraryView(BoxLayout):
     def on_album_selected(self, album_id, album_name, *args):
         Logger.info(f"LibraryView [on_album_selected]: ID: {album_id}, Name: {album_name}")
         if album_id is None or not album_name: return # Basic validation
-        
-        # When an album is selected, update current_album_id and current_album_name.
-        # self.current_artist_id and self.current_artist_name might already be set if coming from an artist's album list.
-        # If coming from "All Albums", self.current_artist_id might be None.
-        # The load_songs_for_album method will try to determine the album's primary artist independently.
+    
         self.current_album_id = album_id
         self.current_album_name = album_name
         self.current_view_mode = "songs_for_album" # Change mode before loading
@@ -524,7 +513,6 @@ class LibraryView(BoxLayout):
             Logger.error(f"LibraryView [on_song_selected]: Filepath not found for track ID {track_id}")
             return
 
-        # If we are in the "songs_for_album" view, play the whole album starting from this song.
         if self.current_view_mode == "songs_for_album" and self.songs_data:
             all_filepaths_in_album = [s['filepath'] for s in self.songs_data if 'filepath' in s and s.get('filepath')]
             if not all_filepaths_in_album: # Should not happen if songs_data is populated

@@ -7,7 +7,6 @@
         orientation: 'vertical'
         # spacing: dp(5) # Spacing between top bar and tabbed panel
 
-        # Top Bar: DAD Player Title on Left, Settings Icon on Right
         BoxLayout:
             size_hint_y: None
             height: dp(48) # Standard toolbar height
@@ -26,7 +25,6 @@
             Widget: # Spacer: This will push the DAD Player title to the left and settings to the right
                 size_hint_x: 1 # Takes up all available horizontal space
 
-            # Changed IconButton to a standard Button for text display
             Button:
                 id: settings_button_main
                 text: "Settings" # Using text instead of an icon character
@@ -36,7 +34,6 @@
                 height: dp(40) # Fixed height
                 on_release: root.open_app_settings()
 
-        # Tabbed Panel: Tabs will be centered due to tab_pos
         TabbedPanel:
             id: main_tab_panel
             do_default_tab: False

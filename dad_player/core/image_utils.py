@@ -12,7 +12,7 @@ except ImportError:
     ImageFont = None
     Logger.warning("ImageUtils: Pillow (PIL) not installed. Image resizing and placeholder generation will not work.")
 
-from dad_player.constants import PLACEHOLDER_ALBUM_FILENAME, APP_ICON_FILENAME # Assuming constants.py is in dad_player package
+from dad_player.constants import PLACEHOLDER_ALBUM_FILENAME, APP_ICON_FILENAME
 
 def resize_image_data(raw_image_bytes, target_max_dim=512, output_format="PNG", quality=85):
     """
@@ -27,7 +27,6 @@ def resize_image_data(raw_image_bytes, target_max_dim=512, output_format="PNG", 
     try:
         pil_image = PILImage.open(io.BytesIO(raw_image_bytes))
 
-        # Ensure image is in a common mode like RGB/RGBA before resizing/saving
         if pil_image.mode not in ('RGB', 'RGBA'):
             if 'A' in pil_image.mode: # Handles modes like LA (Luminance Alpha), PA (Palette Alpha)
                 pil_image = pil_image.convert('RGBA')
@@ -47,7 +46,7 @@ def resize_image_data(raw_image_bytes, target_max_dim=512, output_format="PNG", 
         else: # Default to PNG
             pil_image.save(resized_image_bytes_io, format="PNG", optimize=True)
         
-        resized_image_bytes_io.seek(0) # Rewind the stream to the beginning
+        resized_image_bytes_io.seek(0)
         Logger.info(f"ImageUtils: Image resized to fit {target_max_dim}x{target_max_dim}. New size: {pil_image.size}, Format: {output_format.upper()}")
         return resized_image_bytes_io
     except Exception as e:
@@ -77,24 +76,23 @@ def get_placeholder_album_art_path(assets_icons_dir):
         img = PILImage.new('RGB', (img_size, img_size), color=(50, 50, 60)) # Dark grey
         draw = ImageDraw.Draw(img)
         try:
-            # Try a common system font, then Kivy's default if that fails
             font = ImageFont.truetype("arial.ttf", img_size // 4)
         except IOError:
             try:
-                font = ImageFont.truetype("Roboto-Regular.ttf", img_size // 5) # Kivy's default font
+                font = ImageFont.truetype("Roboto-Regular.ttf", img_size // 5)
             except IOError:
                 font = ImageFont.load_default() # Absolute fallback
         
         text = "No Art"
         # Calculate text size and position for centering
-        if hasattr(draw, 'textbbox'):  # Pillow 8.0.0+ method for text size
+        if hasattr(draw, 'textbbox'):
             text_bbox = draw.textbbox((0, 0), text, font=font)
             text_width = text_bbox[2] - text_bbox[0]
             text_height = text_bbox[3] - text_bbox[1]
-        elif hasattr(draw, 'textsize'):  # Older Pillow method
+        elif hasattr(draw, 'textsize'):
             text_width, text_height = draw.textsize(text, font=font)
-        else: # Fallback if textsize methods are missing somehow
-            text_width, text_height = img_size // 2, img_size // 4 # Rough estimate
+        else:
+            text_width, text_height = img_size // 2, img_size // 4
         
         draw.text(
             ((img_size - text_width) / 2, (img_size - text_height) / 2),
@@ -130,10 +128,10 @@ def get_app_icon_path(assets_icons_dir):
         img = PILImage.new('RGB', (img_size, img_size), color=(70, 100, 130)) 
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arialbd.ttf", img_size // 2) # Try bold Arial
+            font = ImageFont.truetype("arialbd.ttf", img_size // 2)
         except IOError:
             try:
-                font = ImageFont.truetype("Roboto-Bold.ttf", img_size // 2) # Kivy's default bold
+                font = ImageFont.truetype("Roboto-Bold.ttf", img_size // 2)
             except IOError:
                 font = ImageFont.load_default()
         
@@ -146,7 +144,7 @@ def get_app_icon_path(assets_icons_dir):
             text_width, text_height = draw.textsize(text, font=font)
 
         draw.text(
-            ((img_size - text_width) / 2, (img_size - text_height) / 2 - (img_size // 10) ), # Slight y-offset for better centering
+            ((img_size - text_width) / 2, (img_size - text_height) / 2 - (img_size // 10) ),
             text, fill=(220, 220, 255), font=font
         )
         img.save(icon_path)

@@ -77,7 +77,6 @@
     canvas.before:
         Color:
             # Dark grey background, similar to your app's theme
-            # You can adjust this or make it transparent if the parent RecycleView provides the background
             rgba: (0.18, 0.18, 0.18, 1) if root.track_id else (0.15, 0.15, 0.15, 1) # Slightly different if it's a placeholder
         Rectangle:
             pos: self.pos

@@ -8,10 +8,10 @@ from typing import Optional
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.image import Image as CoreImage
-from kivy.graphics import Color, Rectangle # For visual debug
+from kivy.graphics import Color, Rectangle
 from kivy.logger import Logger
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty, BooleanProperty
-from kivy.uix.screenmanager import Screen # Though NowPlayingView is a BoxLayout
+from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from PIL import Image, ImageFilter
 
@@ -38,11 +38,10 @@ class NowPlayingView(BoxLayout):
     repeat_mode_icon = StringProperty("Repeat Off")
 
     _is_seeking = False
-    _visual_debug_active = False # Flag for temporary visual debug
+    _visual_debug_active = False
 
     def __init__(self, player_engine, library_manager, **kwargs):
         super().__init__(**kwargs)
-        # Log initial state immediately after super().__init__
         Logger.info(f"NowPlayingView [INIT]: Self: {self}, Size: {self.size}, Pos: {self.pos}, Parent: {self.parent}, Children: {self.children}, IDs: {self.ids}")
 
         self.player_engine = player_engine
@@ -89,18 +88,16 @@ class NowPlayingView(BoxLayout):
 
         Logger.info(f"NowPlayingView [EVENT on_size]: Triggered. New size: {value}, Pos: {self.pos}. {parent_info}. {ids_info}. {children_info}")
 
-        # Visual Debug: Briefly change background if parented and has valid size
         if self.parent and value[0] > 1 and value[1] > 1 and not self._visual_debug_active:
             Logger.info("NowPlayingView [EVENT on_size]: Applying VISUAL DEBUG background.")
-            self._visual_debug_active = True # Prevent re-triggering removal too quickly
-            with self.canvas.after: # Draw on top
-                Color(0, 1, 0, 0.3) # Semi-transparent green
+            self._visual_debug_active = True
+            with self.canvas.after:
+                Color(0, 1, 0, 0.3)
                 self.debug_rect = Rectangle(pos=self.pos, size=self.size)
-            # Bind to pos and size of self.debug_rect to self
             self.bind(pos=lambda i,p: setattr(self.debug_rect, 'pos', p),
                       size=lambda i,s: setattr(self.debug_rect, 'size', s))
 
-            Clock.schedule_once(self._remove_visual_debug, 2) # Remove after 2 seconds
+            Clock.schedule_once(self._remove_visual_debug, 2)
         elif not self.parent:
             Logger.warning("NowPlayingView [EVENT on_size]: Cannot apply visual debug, no parent.")
 
@@ -239,8 +236,6 @@ class NowPlayingView(BoxLayout):
         Logger.info(f"NowPlayingView [update_ui_from_player_state]: IDs available: {bool(self.ids)}. Keys: {list(self.ids.keys()) if self.ids else 'None'}")
         if 'album_art_np' not in self.ids:
             Logger.critical("NowPlayingView [update_ui_from_player_state]: 'album_art_np' ID NOT FOUND. UI will not update correctly.")
-            # Early exit if critical IDs are missing, as this indicates KV not applied
-            # return # Commented out to allow other updates if possible
 
         if not self.player_engine:
             Logger.warning("NowPlayingView [update_ui_from_player_state]: PlayerEngine not available for UI update.")
@@ -294,7 +289,7 @@ class NowPlayingView(BoxLayout):
             self._apply_placeholder_art()
             return
         if self._default_placeholder_texture is None or self._default_blurred_placeholder_texture is None:
-            self._load_placeholder_textures() # Ensure placeholders are available
+            self._load_placeholder_textures()
 
         raw_art_data = self.player_engine._get_raw_art_for_current_track() # Assumes PlayerEngine has this method
         if raw_art_data:

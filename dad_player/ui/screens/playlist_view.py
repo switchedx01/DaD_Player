@@ -4,13 +4,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivy.lang import Builder
 from kivy.logger import Logger
-from kivy.app import App # For placeholder path and app instance
+from kivy.app import App
 from kivy.clock import Clock
 
 from dad_player.utils import spx, format_duration
 from dad_player.core.image_utils import get_placeholder_album_art_path
 from dad_player.constants import ALBUM_ART_LIST_SIZE # For art in list items
-# SongListItem is used as viewclass, ensure its KV is loaded (via common_widgets.kv)
 from dad_player.ui.widgets.song_list_item import SongListItem
 
 
@@ -26,9 +25,9 @@ class PlaylistView(BoxLayout):
     View for displaying and managing the current playback queue (playlist).
     """
     player_engine = ObjectProperty(None)
-    library_manager = ObjectProperty(None) # For fetching metadata if paths are simple
+    library_manager = ObjectProperty(None)
 
-    playlist_data = ListProperty([]) # Data for the RecycleView
+    playlist_data = ListProperty([])
     status_text = StringProperty("Playlist is empty.")
 
     def __init__(self, **kwargs):
@@ -71,8 +70,6 @@ class PlaylistView(BoxLayout):
             return
 
         current_queue_details = self.player_engine.get_current_playlist_details()
-        # Expected format from get_current_playlist_details:
-        # List of dicts, each: {'filepath': str, 'title': str, 'artist': str, 'album': str, 'duration': float_seconds, 'track_id': optional_int}
 
         if not current_queue_details:
             self.status_text = "Playlist is empty."
@@ -136,8 +133,7 @@ class PlaylistView(BoxLayout):
         playlist_rv = self.ids.get('playlist_rv')
         if playlist_rv:
             playlist_rv.data = self.playlist_data # Assign the new list
-            # playlist_rv.refresh_from_data() # Not strictly needed if data is a ListProperty and RV observes it
-                                            # but can force update if there are subtle issues.
+            # playlist_rv.refresh_from_data()
         else:
             Logger.warning("PlaylistView: 'playlist_rv' RecycleView not found in ids.")
 
@@ -171,8 +167,6 @@ class PlaylistView(BoxLayout):
         if self.player_engine and hasattr(self.player_engine, 'set_shuffle_mode'):
             new_shuffle_state = not self.player_engine.shuffle_mode # Toggle
             self.player_engine.set_shuffle_mode(new_shuffle_state)
-            # The on_shuffle_mode_changed event should trigger refresh_playlist_display
-            # Update button appearance if there's a visual shuffle indicator
             shuffle_button = self.ids.get('shuffle_playlist_button')
             if shuffle_button: # Assuming an IconButton that can change appearance
                 shuffle_button.icon_color_normal = [0.1, 0.7, 0.9, 1] if new_shuffle_state else [0.9, 0.9, 0.9, 1]

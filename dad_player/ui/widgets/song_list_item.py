@@ -4,10 +4,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty, BooleanProperty
 from kivy.logger import Logger
 from kivy.app import App
-from kivy.metrics import dp, sp # Import Kivy's metrics
-
-# from dad_player.utils import spx # REMOVED spx import
-from dad_player.utils import format_duration # format_duration is fine
+from kivy.metrics import dp, sp
+from dad_player.utils import format_duration
 
 class SongListItem(BoxLayout):
     track_id = NumericProperty(None)

@@ -7,8 +7,8 @@ import sys
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.window import Window
-from kivy.uix.popup import Popup # Added for global_scan_progress_update potentially
-from kivy.clock import Clock # Added for _initial_library_check potentially
+from kivy.uix.popup import Popup
+from kivy.clock import Clock
 
 # Core components
 from dad_player.core.settings_manager import SettingsManager
@@ -20,9 +20,8 @@ from dad_player.constants import APP_NAME, APP_VERSION, CONFIG_KEY_LAST_VOLUME
 
 class DadPlayerApp(App):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs) # This call makes Kivy's self.user_data_dir available
+        super().__init__(**kwargs)
         Logger.info("DadPlayerApp: __init__ started.")
-        # Initialize core components here, once.
         self.settings_manager = SettingsManager()
         try:
             self.player_engine = PlayerEngine(settings_manager=self.settings_manager)
@@ -40,8 +39,6 @@ class DadPlayerApp(App):
         Logger.info("DadPlayerApp: LibraryManager initialized.")
         self.screen_manager = None # Will be set in build()
 
-        # Kivy's self.user_data_dir is now available and set.
-        # We don't assign to it. We use it.
         Logger.info(f"DadPlayerApp: Kivy User data directory is: {self.user_data_dir}")
 
         # Define asset and icon paths
@@ -285,11 +282,6 @@ def check_for_null_bytes(filepath):
             content = f.read()
             if b'\x00' in content:
                 print(f"ERROR: Null bytes found in {filepath}")
-                # You can also try to print the byte offset
-                # for i, byte in enumerate(content):
-                #     if byte == 0:
-                #         print(f"  Null byte at offset: {i}")
-                #         break
             else:
                 print(f"SUCCESS: No null bytes in {filepath}")
     except Exception as e:

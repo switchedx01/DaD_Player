@@ -1,8 +1,10 @@
 ### DAD PLAYER!
 
+
 ##What is this?
 
 Dad player is supposed to be a replacement for music players because i truely dont like how there isnt any real good ones around
+
 #but why?
 
 Most media players dont look good, act bad, and dont function how i want them to

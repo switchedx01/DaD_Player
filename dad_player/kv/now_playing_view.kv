@@ -3,8 +3,6 @@
 
 <NowPlayingView>: # This defines the NowPlayingView widget (which IS a BoxLayout)
 
-    # Properties and canvas instructions FOR NowPlayingView itself go here,
-    # indented directly under the <NowPlayingView>: rule.
     canvas.before:
         Color:
             rgba: app.theme_cls.bg_normal if hasattr(app, 'theme_cls') else [0.1, 0.1, 0.1, 1]
@@ -12,11 +10,6 @@
             pos: self.pos
             size: self.size
     minimum_size: dp(800), dp(600) # This applies to NowPlayingView itself
-
-    # Now, define the children of NowPlayingView.
-    # Typically, a BoxLayout (which NowPlayingView is) will have one main child layout
-    # that then contains all other elements, or its orientation must be set if it directly hosts multiple children.
-    # For clarity and common practice, let's ensure it has ONE main child BoxLayout.
 
     BoxLayout: # This is the primary child, containing all visual elements for NowPlayingView
         orientation: 'vertical'
@@ -90,8 +83,6 @@
             size_hint_y: None
             height: dp(30) + dp(20) # This is dp(50)
             spacing: dp(2)
-            # Add horizontal padding to this BoxLayout if that's the goal
-            # padding: [dp(10), 0, dp(10), 0] # Example: left and right padding for the whole section
 
             Slider:
                 id: progress_slider_np
@@ -143,7 +134,7 @@
             Button:
                 id: play_pause_button_np
                 # Update the text based on Python state for play/pause
-                text: "Pause" if root.play_pause_icon_text == 'pause-circle-outline' else "Play" # Changed to text
+                text: "Pause" if root.play_pause_icon_text == 'pause-circle-outline' else "Play"
                 font_name: 'Roboto'
                 font_size: sp(14)
                 on_release: root.on_play_pause_button_press()
@@ -155,9 +146,6 @@
                 on_release: root.on_next_button_press()
             Button:
                 id: repeat_button_np
-                # The root.repeat_mode_icon property in your Python code
-                # should now be set to "Repeat", "Rpt. Song", "Rpt. Off" or similar text
-                # instead of emoji characters.
                 text: root.repeat_mode_icon
                 font_name: 'Roboto'
                 font_size: sp(14)

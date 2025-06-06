@@ -9,31 +9,17 @@ from kivy.metrics import sp, dp
 from kivy.core.window import Window # Import Window
 
 # --- Constants for spx fallback ---
-# It's better if Kivy's Window is ready, but if not,
-# we need a sensible default. 1.0 means 1 design pixel = 1 screen pixel.
 DEFAULT_DENSITY_FALLBACK = 1.0
 SPX_DEBUG_LOGGING = True # Set to False to reduce console noise once resolved
 
 def spx(value_in_pixels):
-    """
-    Scaled Pixels: Attempts to convert a value from design pixels to density-independent
-    pixels (dp) for general sizing, assuming the input is a pixel value at a
-    base density. This function is a fallback for cases where dp() or sp()
-    cannot be used directly in KV at parse time via root.
-    
-    It's STRONGLY RECOMMENDED to use Kivy's built-in dp() and sp() metrics
-    directly in your .kv files and Python code wherever possible, as they are
-    handled correctly by Kivy's rendering pipeline. This spx function should
-    ideally not be needed if KV and widget Python code are structured to use
-    standard Kivy metrics.
-    """
     global SPX_DEBUG_LOGGING
     try:
         # Check if Window exists and has the density attribute
         if Window and hasattr(Window, 'density') and Window.density > 0:
             # Using dp() for a general scaling based on density.
             # If this value was specifically for font sizes, Kivy's sp() is usually preferred.
-            scaled_value = value_in_pixels * (DEFAULT_DENSITY_FALLBACK / Window.density) # This is essentially what dp() does more robustly
+            scaled_value = value_in_pixels * (DEFAULT_DENSITY_FALLBACK / Window.density) 
             if SPX_DEBUG_LOGGING:
                 Logger.trace(f"Utils: spx({value_in_pixels}) -> Kivy dp({value_in_pixels}) approx using density {Window.density} -> {dp(value_in_pixels)}")
             return dp(value_in_pixels) # Prefer Kivy's dp() for consistency
@@ -67,13 +53,12 @@ def get_user_data_dir_for_app():
     if os.name == 'nt':
         user_data_dir = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), app_name)
     elif os.name == 'posix':
-        if sys.platform == 'darwin': 
+        if sys.platform == 'darwin':
             user_data_dir = os.path.join(os.path.expanduser('~/Library/Application Support'), app_name)
-        else: 
+        else:
             user_data_dir = os.path.join(os.path.expanduser('~/.local/share'), app_name)
     else: 
         user_data_dir = os.path.join(os.path.expanduser('~'), '.' + app_name.lower().replace(" ", ""))
-    
     try:
         if not os.path.exists(user_data_dir):
             os.makedirs(user_data_dir, exist_ok=True)
@@ -86,14 +71,13 @@ def get_user_data_dir_for_app():
     return user_data_dir
 
 def format_duration(seconds):
-    """Formats seconds into a MM:SS string."""
     if seconds is None or not isinstance(seconds, (int, float)) or seconds < 0:
         return "0:00"
     try:
         minutes = int(seconds // 60)
         remaining_seconds = int(seconds % 60)
         return f"{minutes}:{remaining_seconds:02d}"
-    except TypeError: # Should be caught by the isinstance check, but as a safeguard
+    except TypeError:
         return "0:00"
 
 
@@ -119,25 +103,21 @@ def generate_file_hash(filepath, block_size=65536):
 
 
 def sanitize_filename_for_cache(filename):
-    """
-    Creates a safe filename string for caching by removing or replacing
-    characters that are problematic in filenames.
-    """
     if not filename:
         return "unknown_file"
     sanitized = re.sub(r'[.\\/:*?"<>|]+', '', filename)
-    sanitized = re.sub(r'\s+', '_', sanitized) 
-    sanitized = re.sub(r'[-_]+', '_', sanitized) 
-    sanitized = sanitized.strip('_-') 
+    sanitized = re.sub(r'\s+', '_', sanitized)
+    sanitized = re.sub(r'[-_]+', '_', sanitized)
+    sanitized = sanitized.strip('_-')
 
     max_len = 100
     if len(sanitized) > max_len:
         name, ext = os.path.splitext(sanitized)
-        if len(ext) > max_len -1: # Handle very long extensions too
+        if len(ext) > max_len -1:
             ext = ext[:max_len-1] if max_len > 1 else ""
             name = ""
         else:
-            name = name[:max_len - len(ext) -1] # -1 for the dot if ext is not empty
+            name = name[:max_len - len(ext) -1]
         sanitized = name + ext if not ext or ext.startswith('.') else name + '.' + ext
         sanitized = sanitized.strip('.') # ensure it doesn't end with just a dot if ext was removed
     

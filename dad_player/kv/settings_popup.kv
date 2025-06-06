@@ -1,10 +1,9 @@
 # #:kivy 2.1.0
 #:import utils dad_player.utils
 #:import constants dad_player.constants
-# #:import IconButton dad_player.ui.widgets.icon_button.IconButton # If used for any buttons
+# #:import IconButton dad_player.ui.widgets.icon_button.IconButton
 
 <PlayerSettingsPopup>:
-    # title, size_hint, auto_dismiss are set in Python or can be overridden here
     title: "Player Settings"
     size_hint: 0.9, 0.9
     auto_dismiss: False # User must explicitly close to save changes or cancel
@@ -14,7 +13,6 @@
         padding: dp(10)
         spacing: dp(10)
 
-        # Optional: A header label for the settings section
         Label:
             text: "Playback Settings"
             font_size: utils.spx(18)
@@ -22,7 +20,7 @@
             height: dp(35) # Increased height
             bold: True
             halign: 'left'
-            text_size: self.width, None # Allow wrapping if needed
+            text_size: self.width, None
             padding: dp(5) # Padding for the label itself
 
         ScrollView:
@@ -34,8 +32,8 @@
                 cols: 1
                 spacing: dp(10) # Spacing between setting rows
                 size_hint_y: None
-                height: self.minimum_height # Allow grid to grow
-                padding: dp(5) # Padding inside the grid
+                height: self.minimum_height 
+                padding: dp(5) 
 
                 # --- Autoplay Setting ---
                 BoxLayout:

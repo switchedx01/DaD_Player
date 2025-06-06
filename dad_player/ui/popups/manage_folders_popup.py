@@ -10,8 +10,6 @@ from kivy.app import App # For accessing app instance to trigger global actions 
 
 from dad_player.utils import spx
 
-# Load KV file for this popup
-# Assumes kv file is in dad_player/kv/manage_folders_popup.kv
 kv_path = os.path.join(os.path.dirname(__file__), "..", "..", "kv", "manage_folders_popup.kv")
 if os.path.exists(kv_path):
     Builder.load_file(kv_path)
@@ -27,12 +25,10 @@ class FolderChooserPopup(Popup):
         super().__init__(**kwargs)
         self.on_folder_selected = on_folder_selected  # Explicitly set as instance attribute
         Logger.info(f"FolderChooserPopup: Initialized with on_folder_selected: {self.on_folder_selected}")
-        # Title and size are set in KV or can be set here
+
         # self.title = "Select Music Folder"
         # self.size_hint = (0.9, 0.9)
         
-        # Content is defined in KV for FolderChooserPopup
-        # Set initial path for FileChooser if provided
         start_path = initial_path or os.path.expanduser("~")
         if not os.path.isdir(start_path): 
             start_path = os.path.abspath(os.sep) # Root path as fallback
@@ -97,8 +93,8 @@ class ManageFoldersPopup(Popup):
 
         folders_rv = self.ids.get('folders_rv')
         if folders_rv:
-            folders_rv.data = self.music_folders_data # Update RV data
-            folders_rv.refresh_from_data() # Force refresh
+            folders_rv.data = self.music_folders_data
+            folders_rv.refresh_from_data()
 
     def open_folder_chooser(self):
         default_music_path = os.path.join(os.path.expanduser("~"), "Music")
@@ -134,8 +130,7 @@ class ManageFoldersPopup(Popup):
                 Logger.info(f"ManageFoldersPopup: music_folders_data after adding: {self.music_folders_data}")
                 self._ask_for_rescan("Folder added. Rescan library now?")
             else:
-                # Get more specific error info from settings_manager (if available)
-                error_message = getattr(self.settings_manager, 'last_error', "Unknown error")  # Assuming SettingsManager might have a last_error attribute
+                error_message = getattr(self.settings_manager, 'last_error', "Unknown error")
                 self.status_message = f"Could not add: {os.path.basename(folder_path)}. {error_message}"
                 Logger.warning(f"ManageFoldersPopup: Failed to add folder. Error: {error_message}")
         else:
@@ -199,15 +194,11 @@ class ManageFoldersPopup(Popup):
         no_button.bind(on_release=confirm_popup.dismiss)
         confirm_popup.open()
 
-    # This method is not directly used by _ask_for_rescan anymore,
-    # as the scan is now ideally handled globally by the app.
-    # Kept for reference or if a local status update is still desired.
+
     def _simple_scan_status_update(self, progress, message, is_done):
         self.status_message = message # Update status within this popup
         if is_done:
             Logger.info(f"ManageFoldersPopup: Direct scan (if initiated from here) completed. Message: {message}")
-            # If scan done, and this popup is still open, refresh its own folder list
-            # and potentially notify main library view.
             self.load_music_folders() 
             app = App.get_running_app()
             if app and hasattr(app, 'refresh_library_view_if_current'):
